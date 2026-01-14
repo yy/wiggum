@@ -28,6 +28,16 @@ def run(
     max_iterations: int = typer.Option(
         10, "-n", "--max-iterations", help="Max iterations"
     ),
+    yolo: bool = typer.Option(
+        False,
+        "--yolo",
+        help="Skip all permission prompts (passes --dangerously-skip-permissions to claude)",
+    ),
+    allow_paths: Optional[str] = typer.Option(
+        None,
+        "--allow-paths",
+        help="Comma-separated paths to allow writing (e.g., 'src/,tests/')",
+    ),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show what would run"),
 ) -> None:
     """Run the agent loop. Stops when all tasks in TASKS.md are complete."""
@@ -41,8 +51,16 @@ def run(
         prompt = prompt_file.read_text()
 
     if dry_run:
-        typer.echo(f"Would run {max_iterations} iterations with prompt:")
-        typer.echo(f"---\n{prompt}\n---")
+        cmd = ["claude", "--print", "-p", "<prompt>"]
+        if yolo:
+            cmd.append("--dangerously-skip-permissions")
+        if allow_paths:
+            for path in allow_paths.split(","):
+                cmd.extend(["--allowedTools", f"Edit:{path.strip()}*"])
+                cmd.extend(["--allowedTools", f"Write:{path.strip()}*"])
+        typer.echo(f"Would run {max_iterations} iterations")
+        typer.echo(f"Command: {' '.join(cmd)}")
+        typer.echo(f"Prompt:\n---\n{prompt}\n---")
         return
 
     for i in range(1, max_iterations + 1):
@@ -57,6 +75,12 @@ def run(
 
         # Run claude
         cmd = ["claude", "--print", "-p", prompt]
+        if yolo:
+            cmd.append("--dangerously-skip-permissions")
+        if allow_paths:
+            for path in allow_paths.split(","):
+                cmd.extend(["--allowedTools", f"Edit:{path.strip()}*"])
+                cmd.extend(["--allowedTools", f"Write:{path.strip()}*"])
         try:
             subprocess.run(cmd, check=False)
         except FileNotFoundError:
@@ -170,13 +194,27 @@ def init(
             )
             raise typer.Exit(1)
 
-    # Get goal from user
+    # Get goal - infer from README if available
     typer.echo("Setting up ralph-loop...\n")
-    goal = typer.prompt("What is the goal of this project?")
+
+    readme_path = Path("README.md")
+    readme_content = ""
+    if readme_path.exists():
+        readme_content = readme_path.read_text()
+        typer.echo("Found README.md - inferring goal from it.")
+        goal = ""  # Will be inferred by Claude
+    else:
+        goal = typer.prompt("What is the goal of this project?")
 
     # Agent-assisted planning (always)
     typer.echo("\nAnalyzing codebase and planning tasks...")
-    meta_prompt = meta_prompt_path.read_text().replace("{{goal}}", goal)
+    meta_prompt = meta_prompt_path.read_text()
+    if readme_content:
+        meta_prompt = meta_prompt.replace(
+            "{{goal}}", f"(Infer from README below)\n\n## README.md\n\n{readme_content}"
+        )
+    else:
+        meta_prompt = meta_prompt.replace("{{goal}}", goal)
     output = run_claude_for_planning(meta_prompt)
 
     use_suggestions = False
@@ -186,10 +224,14 @@ def init(
     if output:
         config = parse_toml_from_output(output)
         if config:
+            # Get goal from Claude if we inferred from README
+            if not goal:
+                goal = config.get("project", {}).get("goal", "")
             doc_files = config.get("project", {}).get("doc_files", doc_files)
             suggested_tasks = config.get("tasks", [])
 
             typer.echo("\nSuggested configuration:")
+            typer.echo(f"  Goal: {goal}")
             typer.echo(f"  Doc files: {doc_files}")
             typer.echo("\nSuggested tasks:")
             for t in suggested_tasks:
@@ -206,6 +248,8 @@ def init(
     # Manual entry if suggestions not used
     if not use_suggestions:
         typer.echo("\nManual configuration:")
+        if not goal:
+            goal = typer.prompt("What is the goal of this project?")
         doc_files = typer.prompt(
             "Which doc files should be updated?", default=doc_files
         )
