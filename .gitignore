@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ralph-loop generated files
+TASKS.md
+LOOP-PROMPT.md
+DONE.md
