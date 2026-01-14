@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ralph-loop is a Python package for setting up and running "Ralph Wiggum loops" for Claude Code and similar AI agent tools. The package provides:
 
 1. **Setup Assistant**: An interactive helper that guides users through configuring loop parameters including prompts, conditions, and security settings
-2. **Loop Runner**: Executes loops with configurable parameters like iteration count and stop conditions
+2. **Loop Runner**: Executes loops with configurable parameters like iteration count (stops when all tasks in TASKS.md are complete)
 
 ## Development
 
@@ -31,7 +31,7 @@ uv run pytest tests/test_file.py::test_name -v
 
 ### CLI Commands
 - `ralph-loop init`: Interactive setup that creates `LOOP-PROMPT.md`, `TASKS.md`, and `.ralph-loop.toml`
-- `ralph-loop run`: Executes the loop, reading prompt from file and iterating until stop conditions are met
+- `ralph-loop run`: Executes the loop, reading prompt from file and iterating until all tasks in TASKS.md are complete (or max iterations reached)
 - `ralph-loop add`: Adds tasks to `TASKS.md`
 
 ### Configuration

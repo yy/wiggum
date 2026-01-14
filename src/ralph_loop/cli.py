@@ -61,52 +61,15 @@ def get_templates_dir() -> Path:
     return Path(importlib.resources.files("ralph_loop").joinpath("../../../templates"))
 
 
-def parse_stop_condition(value: str) -> tuple[str, Optional[Path]]:
-    """Parse stop condition value.
-
-    Args:
-        value: Stop condition string like 'tasks', 'file:/path/to/file', or 'none'
-
-    Returns:
-        Tuple of (condition_type, file_path) where condition_type is 'tasks', 'file', or 'none'
-        and file_path is the path for file conditions (None otherwise).
-
-    Raises:
-        ValueError: If the value is invalid.
-    """
-    value = value.strip()
-    if value == "tasks":
-        return ("tasks", None)
-    elif value == "none":
-        return ("none", None)
-    elif value.startswith("file:"):
-        file_path = value[5:].strip()
-        if not file_path:
-            raise ValueError("file: condition requires a path (e.g., file:DONE.md)")
-        return ("file", Path(file_path))
-    else:
-        raise ValueError(
-            f"Invalid stop condition: '{value}'. Use 'tasks', 'none', or 'file:<path>'"
-        )
-
-
 @app.command()
 def run(
     prompt_file: Optional[Path] = typer.Option(
         None, "-f", "--file", help="Prompt file (default: LOOP-PROMPT.md)"
     ),
     tasks_file: Path = typer.Option(
-        Path("TASKS.md"), "--tasks", help="Tasks file to check for completion"
-    ),
-    stop_file: Optional[Path] = typer.Option(
-        None,
-        "--stop-file",
-        help="Exit when this file exists (legacy, prefer --stop-condition)",
-    ),
-    stop_condition: Optional[str] = typer.Option(
-        None,
-        "--stop-condition",
-        help="Stop condition: 'tasks' (default), 'file:<path>', or 'none'",
+        Path("TASKS.md"),
+        "--tasks",
+        help="Tasks file for stop condition (stop when all tasks complete)",
     ),
     max_iterations: int = typer.Option(
         10, "-n", "--max-iterations", help="Max iterations"
@@ -137,6 +100,8 @@ def run(
     ),
     show_progress: bool = typer.Option(
         False,
+        "-v",
+        "--verbose",
         "--show-progress",
         help="Show file changes (via git status) after each iteration",
     ),
@@ -160,19 +125,6 @@ def run(
         )
         raise typer.Exit(1)
 
-    # Parse and determine effective stop condition
-    condition_type = "tasks"  # Default
-    effective_stop_file: Optional[Path] = stop_file  # For backwards compatibility
-
-    if stop_condition is not None:
-        try:
-            condition_type, parsed_file = parse_stop_condition(stop_condition)
-            if condition_type == "file":
-                effective_stop_file = parsed_file
-        except ValueError as e:
-            typer.echo(f"Error: {e}", err=True)
-            raise typer.Exit(1)
-
     # Determine prompt source - always from file
     if prompt_file is None:
         prompt_file = Path("LOOP-PROMPT.md")
@@ -191,16 +143,7 @@ def run(
                 cmd.extend(["--allowedTools", f"Write:{path.strip()}*"])
         typer.echo(f"Would run {max_iterations} iterations")
         typer.echo(f"Command: {' '.join(cmd)}")
-        # Show stop condition
-        if condition_type == "tasks":
-            typer.echo(f"Stop condition: tasks (check {tasks_file})")
-        elif condition_type == "file":
-            typer.echo(f"Stop condition: file ({effective_stop_file})")
-        elif condition_type == "none":
-            typer.echo("Stop condition: none (only iteration limit)")
-        # Legacy: also show if --stop-file was explicitly provided
-        if stop_file and stop_condition is None:
-            typer.echo(f"Stop file: {stop_file}")
+        typer.echo(f"Stop condition: tasks (check {tasks_file})")
         if continue_session:
             typer.echo(
                 "Session mode: continue (will pass -c to claude after first iteration)"
@@ -218,14 +161,8 @@ def run(
 
     def check_stop_conditions() -> Optional[str]:
         """Check stop conditions and return exit message if should stop."""
-        if condition_type == "none":
-            return None  # Only iteration limit applies
-        if condition_type == "file" or effective_stop_file:
-            if file_exists_check(effective_stop_file):
-                return f"Stop file '{effective_stop_file}' exists. Exiting."
-        if condition_type == "tasks":
-            if not tasks_remaining(tasks_file):
-                return f"All tasks in {tasks_file} are complete. Exiting."
+        if not tasks_remaining(tasks_file):
+            return f"All tasks in {tasks_file} are complete. Exiting."
         return None
 
     for i in range(1, max_iterations + 1):
@@ -322,20 +259,6 @@ def get_current_task(tasks_file: Path = Path("TASKS.md")) -> Optional[str]:
     if match:
         return match.group(1).strip()
     return None
-
-
-def file_exists_check(stop_file: Optional[Path]) -> bool:
-    """Check if the stop file exists.
-
-    Args:
-        stop_file: Path to check, or None if no stop file is configured.
-
-    Returns:
-        True if stop_file is set and exists, False otherwise.
-    """
-    if stop_file is None:
-        return False
-    return stop_file.exists()
 
 
 def get_file_changes() -> tuple[bool, str]:
@@ -610,8 +533,11 @@ def init(
 
     # Generate files from templates
     prompt_template = prompt_template_path.read_text()
-    prompt_content = prompt_template.replace("{{goal}}", goal).replace(
-        "{{doc_files}}", doc_files
+    tasks_str = "\n".join(tasks) if tasks else "- [ ] (add your first task here)"
+    prompt_content = (
+        prompt_template.replace("{{goal}}", goal)
+        .replace("{{doc_files}}", doc_files)
+        .replace("{{tasks}}", tasks_str)
     )
 
     tasks_template = (

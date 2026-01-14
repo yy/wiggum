@@ -10,6 +10,104 @@ from ralph_loop.cli import app
 runner = CliRunner()
 
 
+class TestVerboseFlag:
+    """Tests for -v/--verbose aliases for progress display."""
+
+    def test_short_verbose_flag_enables_progress(self, tmp_path: Path) -> None:
+        """-v short flag should enable progress display (same as --show-progress)."""
+        prompt_file = tmp_path / "LOOP-PROMPT.md"
+        prompt_file.write_text("test prompt")
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
+
+        git_was_called = False
+
+        def mock_subprocess_run(cmd, **kwargs):
+            nonlocal git_was_called
+            if cmd[0] == "claude":
+                tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] task1\n")
+                return MagicMock(returncode=0, stdout="Claude output")
+            elif cmd[0] == "git":
+                git_was_called = True
+                return MagicMock(returncode=0, stdout=" M file.py\n")
+            return MagicMock(returncode=0, stdout="")
+
+        with patch("ralph_loop.cli.subprocess.run", side_effect=mock_subprocess_run):
+            result = runner.invoke(
+                app,
+                [
+                    "run",
+                    "-f",
+                    str(prompt_file),
+                    "--tasks",
+                    str(tasks_file),
+                    "-v",
+                    "-n",
+                    "5",
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert git_was_called
+
+    def test_long_verbose_flag_enables_progress(self, tmp_path: Path) -> None:
+        """--verbose long flag should enable progress display (same as --show-progress)."""
+        prompt_file = tmp_path / "LOOP-PROMPT.md"
+        prompt_file.write_text("test prompt")
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
+
+        git_was_called = False
+
+        def mock_subprocess_run(cmd, **kwargs):
+            nonlocal git_was_called
+            if cmd[0] == "claude":
+                tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] task1\n")
+                return MagicMock(returncode=0, stdout="Claude output")
+            elif cmd[0] == "git":
+                git_was_called = True
+                return MagicMock(returncode=0, stdout=" M file.py\n")
+            return MagicMock(returncode=0, stdout="")
+
+        with patch("ralph_loop.cli.subprocess.run", side_effect=mock_subprocess_run):
+            result = runner.invoke(
+                app,
+                [
+                    "run",
+                    "-f",
+                    str(prompt_file),
+                    "--tasks",
+                    str(tasks_file),
+                    "--verbose",
+                    "-n",
+                    "5",
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert git_was_called
+
+    def test_dry_run_with_verbose_flag(self, tmp_path: Path) -> None:
+        """Dry run should display progress tracking when -v is used."""
+        prompt_file = tmp_path / "LOOP-PROMPT.md"
+        prompt_file.write_text("test prompt")
+
+        result = runner.invoke(
+            app,
+            [
+                "run",
+                "-f",
+                str(prompt_file),
+                "-v",
+                "--dry-run",
+            ],
+        )
+
+        assert result.exit_code == 0
+        # Should mention progress tracking in output
+        assert "progress" in result.output.lower()
+
+
 class TestShowProgressFlag:
     """Tests for the --show-progress flag that displays file changes after each iteration."""
 

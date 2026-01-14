@@ -13,7 +13,7 @@ This package helps you set up and run these loops with proper guardrails.
 The raw loop above works, but you probably want:
 
 - **Iteration limits** - stop after N runs
-- **Stop conditions** - exit when a goal is reached
+- **Task-based stopping** - exit when all tasks in TASKS.md are checked off
 - **Session management** - continue or reset context between runs
 - **Security settings** - control what the agent can do
 - **Logging** - track what happened across iterations
@@ -41,10 +41,8 @@ ralph-loop add "Implement feature X"
 # Run with overrides
 ralph-loop run --max-iterations 10 -f custom-prompt.md
 
-# Set stop condition: 'tasks' (default), 'file:<path>', or 'none'
-ralph-loop run --stop-condition tasks              # Stop when TASKS.md has no unchecked items
-ralph-loop run --stop-condition file:DONE.md      # Stop when DONE.md exists
-ralph-loop run --stop-condition none              # Only stop at iteration limit
+# Use a custom tasks file (default: TASKS.md)
+ralph-loop run --tasks CUSTOM_TASKS.md
 
 # Maintain conversation context between iterations
 ralph-loop run --continue
@@ -55,8 +53,10 @@ ralph-loop run --reset
 # Log output to a file
 ralph-loop run --log-file loop.log
 
-# Show file changes after each iteration
-ralph-loop run --show-progress
+# Show file changes after each iteration (verbose mode)
+ralph-loop run -v
+ralph-loop run --verbose
+ralph-loop run --show-progress  # legacy alias
 ```
 
 ## Configuration

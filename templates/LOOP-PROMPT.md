@@ -2,6 +2,10 @@
 
 {{goal}}
 
+## Tasks
+
+{{tasks}}
+
 ## Workflow
 
 1. Read TASKS.md to see the current task list
@@ -17,8 +21,8 @@
 
 ## Rules
 
-- Only work on ONE task per session. If you discover some tasks, add them to TASKS.md.
-- If blocked, add a note to TASKS.md and move to the task that's blocking the current. 
+- Only work on ONE task per session. If you discover tasks that should be done, add them to TASKS.md.
+- If blocked, identify the task that's blocking the current, update TASKS.md and then move on to another task or the task that you have just identified. 
 - NEVER mark a task complete unless tests pass
 - Keep documentation in sync with implementation
 - New tasks go in the Todo section with clear descriptions
