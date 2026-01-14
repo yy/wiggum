@@ -10,6 +10,7 @@ This is the "Ralph Wiggum loop" - the simplest possible agent loop. ralph-loop a
 
 ## Philosophy
 
+- **Simple** - prefer simplicity whenever possible
 - **Minimal** - does one thing well: run a prompt in a loop until tasks are done
 - **Opinionated** - sensible defaults, few options
 - **Task-driven** - stops when TASKS.md has no unchecked items
