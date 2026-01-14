@@ -29,4 +29,14 @@ uv run pytest tests/test_file.py::test_name -v
 
 ## Architecture
 
-*To be documented as the codebase develops.*
+### CLI Commands
+- `ralph-loop init`: Interactive setup that creates `LOOP-PROMPT.md`, `TASKS.md`, and `.ralph-loop.toml`
+- `ralph-loop run`: Executes the loop, reading prompt from file and iterating until stop conditions are met
+- `ralph-loop add`: Adds tasks to `TASKS.md`
+
+### Configuration
+Security settings are stored in `.ralph-loop.toml` and read by the `run` command:
+- `yolo`: Skip all permission prompts
+- `allow_paths`: Comma-separated paths to allow writing
+
+CLI flags (`--yolo`, `--allow-paths`) override config file settings.

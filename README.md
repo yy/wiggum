@@ -35,27 +35,46 @@ ralph-loop init
 # Run a configured loop
 ralph-loop run
 
+# Add a task to TASKS.md
+ralph-loop add "Implement feature X"
+
 # Run with overrides
-ralph-loop run --max-iterations 10 --prompt "Review and improve this codebase"
+ralph-loop run --max-iterations 10 -f custom-prompt.md
+
+# Set stop condition: 'tasks' (default), 'file:<path>', or 'none'
+ralph-loop run --stop-condition tasks              # Stop when TASKS.md has no unchecked items
+ralph-loop run --stop-condition file:DONE.md      # Stop when DONE.md exists
+ralph-loop run --stop-condition none              # Only stop at iteration limit
+
+# Maintain conversation context between iterations
+ralph-loop run --continue
+
+# Start fresh each iteration (default)
+ralph-loop run --reset
+
+# Log output to a file
+ralph-loop run --log-file loop.log
+
+# Show file changes after each iteration
+ralph-loop run --show-progress
 ```
 
 ## Configuration
 
-ralph-loop stores configuration in `.ralph-loop.toml`:
+`ralph-loop init` asks about security settings and stores them in `.ralph-loop.toml`:
 
 ```toml
-[loop]
-max_iterations = 10
-prompt_file = "PROMPT.md"
-
-[stop]
-condition = "file_exists"
-target = "DONE.md"
-
 [security]
-allow_write = true
-allow_bash = false
+yolo = false
+allow_paths = "src/,tests/"
 ```
+
+Security modes:
+- **Conservative** (default): Claude asks permission for each action
+- **Path-restricted**: Allows writes to specific paths only
+- **YOLO mode**: Skips all permission prompts (dangerous!)
+
+CLI flags (`--yolo`, `--allow-paths`) override the config file settings.
 
 ## License
 
