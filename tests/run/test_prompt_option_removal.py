@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app
+from wiggum.cli import app
 
 runner = CliRunner()
 
@@ -34,7 +34,7 @@ class TestPromptOptionRemoval:
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] all done\n")
 
-        with patch("ralph_loop.agents_claude.subprocess.run") as mock_run:
+        with patch("wiggum.agents_claude.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
             result = runner.invoke(
                 app,
@@ -58,7 +58,7 @@ class TestPromptOptionRemoval:
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] done\n")
 
-        with patch("ralph_loop.agents_claude.subprocess.run") as mock_run:
+        with patch("wiggum.agents_claude.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
             result = runner.invoke(
                 app,
@@ -125,7 +125,7 @@ class TestPromptFileDefault:
         original_dir = os.getcwd()
         try:
             os.chdir(tmp_path)
-            with patch("ralph_loop.agents_claude.subprocess.run") as mock_run:
+            with patch("wiggum.agents_claude.subprocess.run") as mock_run:
                 mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
                 result = runner.invoke(
                     app,

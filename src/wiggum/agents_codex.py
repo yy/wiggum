@@ -1,21 +1,21 @@
-"""Gemini agent implementation."""
+"""Codex agent implementation."""
 
 import subprocess
 
-from ralph_loop.agents import AgentConfig, AgentResult, register_agent
+from wiggum.agents import AgentConfig, AgentResult, register_agent
 
 
 @register_agent
-class GeminiAgent:
-    """Agent implementation for Google Gemini CLI."""
+class CodexAgent:
+    """Agent implementation for OpenAI Codex CLI."""
 
     @property
     def name(self) -> str:
         """The name of the agent."""
-        return "gemini"
+        return "codex"
 
     def run(self, config: AgentConfig) -> AgentResult:
-        """Run Gemini with the given configuration.
+        """Run Codex with the given configuration.
 
         Args:
             config: Configuration including prompt, security settings, etc.
@@ -23,14 +23,15 @@ class GeminiAgent:
         Returns:
             AgentResult containing stdout, stderr, and return code.
         """
-        cmd = ["gemini", "-p", config.prompt]
+        cmd = ["codex", "--json", config.prompt]
 
         if config.yolo:
-            cmd.append("--yolo")
+            cmd.insert(1, "--yolo")
 
         if config.allow_paths:
-            # Gemini uses --include-directories with comma-separated paths
-            cmd.extend(["--include-directories", config.allow_paths])
+            for path in config.allow_paths.split(","):
+                cmd.insert(1, path.strip())
+                cmd.insert(1, "--add-dir")
 
         try:
             result = subprocess.run(cmd, check=False, capture_output=True, text=True)
@@ -42,6 +43,6 @@ class GeminiAgent:
         except FileNotFoundError:
             return AgentResult(
                 stdout="",
-                stderr="Error: 'gemini' command not found. Is Gemini CLI installed?",
+                stderr="Error: 'codex' command not found. Is OpenAI Codex CLI installed?",
                 return_code=1,
             )

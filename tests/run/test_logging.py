@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app
+from wiggum.cli import app
 
 runner = CliRunner()
 
@@ -27,7 +27,7 @@ class TestLogFileOption:
             return MagicMock(returncode=0, stdout="Test output from claude")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -60,7 +60,7 @@ class TestLogFileOption:
             return MagicMock(returncode=0, stdout="Test output")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -95,7 +95,7 @@ class TestLogFileContent:
             return MagicMock(returncode=0, stdout="Claude output here")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             runner.invoke(
                 app,
@@ -129,7 +129,7 @@ class TestLogFileContent:
             return MagicMock(returncode=0, stdout="Claude output here")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             runner.invoke(
                 app,
@@ -166,7 +166,7 @@ class TestLogFileContent:
             return MagicMock(returncode=0, stdout=expected_output)
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             runner.invoke(
                 app,
@@ -220,7 +220,7 @@ class TestLogFileMultipleIterations:
             return MagicMock(returncode=0, stdout=f"Output for iteration {call_count}")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             runner.invoke(
                 app,
@@ -263,7 +263,7 @@ class TestLogFileMultipleIterations:
             return MagicMock(returncode=0, stdout="New output")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             runner.invoke(
                 app,

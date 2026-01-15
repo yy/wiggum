@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app
+from wiggum.cli import app
 
 runner = CliRunner()
 
@@ -39,7 +39,7 @@ Test goal
 - [ ] Clean up unused imports
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -69,7 +69,7 @@ Test goal
 - [ ] Some task
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ) as mock_planning:
                 # Also patch subprocess.run to track if loop would run
                 with patch("subprocess.run") as mock_run:
@@ -110,7 +110,7 @@ Test goal
 - [ ] New refactoring task
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -144,7 +144,7 @@ Test goal
 - [ ] Add error handling
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -163,7 +163,7 @@ Test goal
             Path("LOOP-PROMPT.md").write_text("## Goal\n\nTest goal")
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n- [ ] Existing\n")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
             assert result.exit_code == 0
@@ -206,7 +206,7 @@ Test goal
 - [ ] First identified task
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -238,7 +238,7 @@ Build CLI automation tool
 - [ ] Improve CLI help messages
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ) as mock_planning:
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -269,7 +269,7 @@ Test goal
 - [ ] Task three
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 

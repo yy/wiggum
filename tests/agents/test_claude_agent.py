@@ -9,8 +9,8 @@ These tests verify the ClaudeAgent:
 from unittest.mock import MagicMock, patch
 
 
-from ralph_loop.agents import Agent, AgentConfig, AgentResult, get_agent
-from ralph_loop.agents_claude import ClaudeAgent
+from wiggum.agents import Agent, AgentConfig, AgentResult, get_agent
+from wiggum.agents_claude import ClaudeAgent
 
 
 class TestClaudeAgentImplementation:
@@ -41,7 +41,7 @@ class TestClaudeAgentImplementation:
 class TestClaudeAgentCommandBuilding:
     """Tests that ClaudeAgent builds the correct CLI commands."""
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_basic_command(self, mock_run: MagicMock):
         """Basic config should build 'claude --print -p <prompt>'."""
         mock_run.return_value = MagicMock(stdout="output", stderr="", returncode=0)
@@ -54,7 +54,7 @@ class TestClaudeAgentCommandBuilding:
         cmd = mock_run.call_args[0][0]
         assert cmd[:4] == ["claude", "--print", "-p", "test prompt"]
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_yolo_mode_adds_flag(self, mock_run: MagicMock):
         """yolo=True should add --dangerously-skip-permissions."""
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
@@ -66,7 +66,7 @@ class TestClaudeAgentCommandBuilding:
         cmd = mock_run.call_args[0][0]
         assert "--dangerously-skip-permissions" in cmd
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_yolo_false_no_flag(self, mock_run: MagicMock):
         """yolo=False should not add --dangerously-skip-permissions."""
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
@@ -78,7 +78,7 @@ class TestClaudeAgentCommandBuilding:
         cmd = mock_run.call_args[0][0]
         assert "--dangerously-skip-permissions" not in cmd
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_continue_session_adds_flag(self, mock_run: MagicMock):
         """continue_session=True should add -c flag."""
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
@@ -90,7 +90,7 @@ class TestClaudeAgentCommandBuilding:
         cmd = mock_run.call_args[0][0]
         assert "-c" in cmd
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_continue_session_false_no_flag(self, mock_run: MagicMock):
         """continue_session=False should not add -c flag."""
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
@@ -102,7 +102,7 @@ class TestClaudeAgentCommandBuilding:
         cmd = mock_run.call_args[0][0]
         assert "-c" not in cmd
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_allow_paths_adds_allowed_tools(self, mock_run: MagicMock):
         """allow_paths should add --allowedTools flags for Edit and Write."""
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
@@ -119,7 +119,7 @@ class TestClaudeAgentCommandBuilding:
         assert "Edit:tests/*" in cmd
         assert "Write:tests/*" in cmd
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_allow_paths_none_no_allowed_tools(self, mock_run: MagicMock):
         """allow_paths=None should not add --allowedTools flags."""
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
@@ -135,7 +135,7 @@ class TestClaudeAgentCommandBuilding:
 class TestClaudeAgentResult:
     """Tests that ClaudeAgent returns correct results."""
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_returns_agent_result(self, mock_run: MagicMock):
         """run() should return an AgentResult."""
         mock_run.return_value = MagicMock(stdout="output", stderr="err", returncode=0)
@@ -145,7 +145,7 @@ class TestClaudeAgentResult:
 
         assert isinstance(result, AgentResult)
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_captures_stdout(self, mock_run: MagicMock):
         """Result should contain stdout from subprocess."""
         mock_run.return_value = MagicMock(stdout="hello world", stderr="", returncode=0)
@@ -155,7 +155,7 @@ class TestClaudeAgentResult:
 
         assert result.stdout == "hello world"
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_captures_stderr(self, mock_run: MagicMock):
         """Result should contain stderr from subprocess."""
         mock_run.return_value = MagicMock(stdout="", stderr="error msg", returncode=1)
@@ -165,7 +165,7 @@ class TestClaudeAgentResult:
 
         assert result.stderr == "error msg"
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_captures_return_code(self, mock_run: MagicMock):
         """Result should contain return code from subprocess."""
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=42)
@@ -175,7 +175,7 @@ class TestClaudeAgentResult:
 
         assert result.return_code == 42
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_handles_none_stdout(self, mock_run: MagicMock):
         """Result should handle None stdout gracefully."""
         mock_run.return_value = MagicMock(stdout=None, stderr="", returncode=0)
@@ -185,7 +185,7 @@ class TestClaudeAgentResult:
 
         assert result.stdout == ""
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_handles_none_stderr(self, mock_run: MagicMock):
         """Result should handle None stderr gracefully."""
         mock_run.return_value = MagicMock(stdout="", stderr=None, returncode=0)
@@ -199,7 +199,7 @@ class TestClaudeAgentResult:
 class TestClaudeAgentErrorHandling:
     """Tests that ClaudeAgent handles errors appropriately."""
 
-    @patch("ralph_loop.agents_claude.subprocess.run")
+    @patch("wiggum.agents_claude.subprocess.run")
     def test_handles_missing_claude_command(self, mock_run: MagicMock):
         """Should return error result when claude command is not found."""
         mock_run.side_effect = FileNotFoundError("No such file or directory: 'claude'")

@@ -9,7 +9,7 @@ These tests verify the CodexAgent:
 from unittest.mock import MagicMock, patch
 
 
-from ralph_loop.agents import Agent, AgentConfig, AgentResult, get_agent
+from wiggum.agents import Agent, AgentConfig, AgentResult, get_agent
 
 
 class TestCodexAgentImplementation:
@@ -17,14 +17,14 @@ class TestCodexAgentImplementation:
 
     def test_codex_agent_implements_agent_protocol(self):
         """CodexAgent should implement the Agent protocol."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         agent = CodexAgent()
         assert isinstance(agent, Agent)
 
     def test_codex_agent_name_is_codex(self):
         """CodexAgent should have name 'codex'."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         agent = CodexAgent()
         assert agent.name == "codex"
@@ -32,15 +32,14 @@ class TestCodexAgentImplementation:
     def test_codex_agent_is_registered(self):
         """CodexAgent should be registered in the agent registry."""
         # Ensure the module is imported to trigger registration
-        import ralph_loop.agents_codex  # noqa: F401
+        import wiggum.agents_codex  # noqa: F401
 
         agent = get_agent("codex")
         assert agent.name == "codex"
 
     def test_codex_agent_available_in_list(self):
         """CodexAgent should appear in available agents list."""
-        from ralph_loop.agents import get_available_agents
-        import ralph_loop.agents_codex  # noqa: F401
+        from wiggum.agents import get_available_agents
 
         agents = get_available_agents()
         assert "codex" in agents
@@ -49,10 +48,10 @@ class TestCodexAgentImplementation:
 class TestCodexAgentCommandBuilding:
     """Tests that CodexAgent builds the correct CLI commands."""
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_basic_command(self, mock_run: MagicMock):
         """Basic config should build 'codex <prompt>'."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="output", stderr="", returncode=0)
 
@@ -66,10 +65,10 @@ class TestCodexAgentCommandBuilding:
         assert cmd[0] == "codex"
         assert "test prompt" in cmd
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_yolo_mode_adds_flag(self, mock_run: MagicMock):
         """yolo=True should add --yolo flag."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
 
@@ -80,10 +79,10 @@ class TestCodexAgentCommandBuilding:
         cmd = mock_run.call_args[0][0]
         assert "--yolo" in cmd
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_yolo_false_no_flag(self, mock_run: MagicMock):
         """yolo=False should not add --yolo flag."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
 
@@ -94,10 +93,10 @@ class TestCodexAgentCommandBuilding:
         cmd = mock_run.call_args[0][0]
         assert "--yolo" not in cmd
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_allow_paths_adds_add_dir(self, mock_run: MagicMock):
         """allow_paths should add --add-dir flags for each path."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
 
@@ -111,10 +110,10 @@ class TestCodexAgentCommandBuilding:
         assert "src/" in cmd
         assert "tests/" in cmd
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_allow_paths_none_no_add_dir(self, mock_run: MagicMock):
         """allow_paths=None should not add --add-dir flags."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
 
@@ -125,10 +124,10 @@ class TestCodexAgentCommandBuilding:
         cmd = mock_run.call_args[0][0]
         assert "--add-dir" not in cmd
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_uses_json_output(self, mock_run: MagicMock):
         """Codex should use --json flag for machine-readable output."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="output", stderr="", returncode=0)
 
@@ -143,10 +142,10 @@ class TestCodexAgentCommandBuilding:
 class TestCodexAgentResult:
     """Tests that CodexAgent returns correct results."""
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_returns_agent_result(self, mock_run: MagicMock):
         """run() should return an AgentResult."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="output", stderr="err", returncode=0)
 
@@ -155,10 +154,10 @@ class TestCodexAgentResult:
 
         assert isinstance(result, AgentResult)
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_captures_stdout(self, mock_run: MagicMock):
         """Result should contain stdout from subprocess."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="hello world", stderr="", returncode=0)
 
@@ -167,10 +166,10 @@ class TestCodexAgentResult:
 
         assert result.stdout == "hello world"
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_captures_stderr(self, mock_run: MagicMock):
         """Result should contain stderr from subprocess."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="", stderr="error msg", returncode=1)
 
@@ -179,10 +178,10 @@ class TestCodexAgentResult:
 
         assert result.stderr == "error msg"
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_captures_return_code(self, mock_run: MagicMock):
         """Result should contain return code from subprocess."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=42)
 
@@ -191,10 +190,10 @@ class TestCodexAgentResult:
 
         assert result.return_code == 42
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_handles_none_stdout(self, mock_run: MagicMock):
         """Result should handle None stdout gracefully."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout=None, stderr="", returncode=0)
 
@@ -203,10 +202,10 @@ class TestCodexAgentResult:
 
         assert result.stdout == ""
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_handles_none_stderr(self, mock_run: MagicMock):
         """Result should handle None stderr gracefully."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.return_value = MagicMock(stdout="", stderr=None, returncode=0)
 
@@ -219,10 +218,10 @@ class TestCodexAgentResult:
 class TestCodexAgentErrorHandling:
     """Tests that CodexAgent handles errors appropriately."""
 
-    @patch("ralph_loop.agents_codex.subprocess.run")
+    @patch("wiggum.agents_codex.subprocess.run")
     def test_handles_missing_codex_command(self, mock_run: MagicMock):
         """Should return error result when codex command is not found."""
-        from ralph_loop.agents_codex import CodexAgent
+        from wiggum.agents_codex import CodexAgent
 
         mock_run.side_effect = FileNotFoundError("No such file or directory: 'codex'")
 

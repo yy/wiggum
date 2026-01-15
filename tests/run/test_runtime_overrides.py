@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app
+from wiggum.cli import app
 
 runner = CliRunner()
 
@@ -21,7 +21,7 @@ class TestDefaultStopCondition:
         # All tasks complete
         tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] task1\n")
 
-        with patch("ralph_loop.agents_claude.subprocess.run") as mock_run:
+        with patch("wiggum.agents_claude.subprocess.run") as mock_run:
             result = runner.invoke(
                 app,
                 [
@@ -48,7 +48,7 @@ class TestDefaultStopCondition:
         # All tasks complete in custom file
         custom_tasks.write_text("# Tasks\n\n## Done\n\n- [x] task1\n")
 
-        with patch("ralph_loop.agents_claude.subprocess.run") as mock_run:
+        with patch("wiggum.agents_claude.subprocess.run") as mock_run:
             result = runner.invoke(
                 app,
                 [

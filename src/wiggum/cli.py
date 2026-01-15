@@ -5,20 +5,20 @@ from typing import Optional
 
 import typer
 
-from ralph_loop.agents import AgentConfig, get_agent, get_available_agents
-from ralph_loop.config import (
+from wiggum.agents import AgentConfig, get_agent, get_available_agents
+from wiggum.config import (
     CONFIG_FILE,
     get_templates_dir,
     read_config,
     write_config,
 )
-from ralph_loop.parsing import parse_markdown_from_output
-from ralph_loop.runner import (
+from wiggum.parsing import parse_markdown_from_output
+from wiggum.runner import (
     get_file_changes,
     run_claude_for_planning,
     write_log_entry,
 )
-from ralph_loop.tasks import (
+from wiggum.tasks import (
     add_task_to_file,
     get_current_task,
     get_existing_task_descriptions,

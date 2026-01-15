@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app, read_config, write_config
+from wiggum.cli import app, read_config, write_config
 
 runner = CliRunner()
 

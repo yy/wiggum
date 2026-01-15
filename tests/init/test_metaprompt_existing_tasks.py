@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app
+from wiggum.cli import app
 
 runner = CliRunner()
 
@@ -67,7 +67,7 @@ Test goal
 ```"""
 
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
             ):
                 result = runner.invoke(
                     app,
@@ -125,7 +125,7 @@ Test goal
 ```"""
 
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
             ):
                 runner.invoke(app, ["init"], input="y\n1\n")
 
@@ -175,7 +175,7 @@ Test goal
 ```"""
 
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
             ):
                 runner.invoke(app, ["init"], input="y\n1\n")
 
@@ -222,7 +222,7 @@ Test goal
 ```"""
 
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
             ):
                 runner.invoke(app, ["init"], input="y\n1\n")
 
@@ -267,7 +267,7 @@ Test goal
 ```"""
 
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
             ):
                 runner.invoke(app, ["init"], input="y\n1\n")
 

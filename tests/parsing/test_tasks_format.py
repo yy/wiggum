@@ -7,7 +7,7 @@ it makes it easier to append new tasks to the end of the file.
 
 from pathlib import Path
 
-from ralph_loop.cli import get_current_task, tasks_remaining
+from wiggum.cli import get_current_task, tasks_remaining
 
 
 class TestDoneFirstFormat:

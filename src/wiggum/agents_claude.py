@@ -2,7 +2,7 @@
 
 import subprocess
 
-from ralph_loop.agents import AgentConfig, AgentResult, register_agent
+from wiggum.agents import AgentConfig, AgentResult, register_agent
 
 
 @register_agent

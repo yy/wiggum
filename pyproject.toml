@@ -1,5 +1,5 @@
 [project]
-name = "ralph-loop"
+name = "wiggum"
 version = "0.1.0"
 description = "Ralph Wiggum loop for agents"
 readme = "README.md"
@@ -41,7 +41,7 @@ Repository = "https://github.com/yy/ralph-loop"
 Issues = "https://github.com/yy/ralph-loop/issues"
 
 [project.scripts]
-ralph-loop = "ralph_loop.cli:app"
+wiggum = "wiggum.cli:app"
 
 [build-system]
 requires = ["uv_build>=0.8.12,<0.9.0"]

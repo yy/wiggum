@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app, get_current_task
+from wiggum.cli import app, get_current_task
 
 runner = CliRunner()
 
@@ -98,7 +98,7 @@ class TestRunDisplaysCurrentTask:
             tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] Implement feature X\n")
             return MagicMock(returncode=0)
 
-        with patch("ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run):
+        with patch("wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run):
             result = runner.invoke(
                 app,
                 [
@@ -123,7 +123,7 @@ class TestRunDisplaysCurrentTask:
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] All done\n")
 
-        with patch("ralph_loop.agents_claude.subprocess.run") as mock_run:
+        with patch("wiggum.agents_claude.subprocess.run") as mock_run:
             result = runner.invoke(
                 app,
                 [

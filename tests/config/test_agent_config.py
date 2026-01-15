@@ -16,9 +16,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 from typer.testing import CliRunner
 
-from ralph_loop.agents import AgentResult, get_available_agents
-from ralph_loop.cli import app
-from ralph_loop.config import read_config, write_config
+from wiggum.agents import AgentResult, get_available_agents
+from wiggum.cli import app
+from wiggum.config import read_config, write_config
 
 runner = CliRunner()
 
@@ -104,7 +104,7 @@ class TestAgentCliFlag:
         mock_agent.run.side_effect = complete_task
 
         with patch(
-            "ralph_loop.cli.get_agent", return_value=mock_agent
+            "wiggum.cli.get_agent", return_value=mock_agent
         ) as mock_get_agent:
             result = runner.invoke(
                 app,
@@ -142,7 +142,7 @@ class TestAgentCliFlag:
         mock_agent.run.side_effect = complete_task
 
         with patch(
-            "ralph_loop.cli.get_agent", return_value=mock_agent
+            "wiggum.cli.get_agent", return_value=mock_agent
         ) as mock_get_agent:
             result = runner.invoke(
                 app,
@@ -185,7 +185,7 @@ class TestAgentConfigFromFile:
         mock_agent.run.side_effect = complete_task
 
         with patch(
-            "ralph_loop.cli.get_agent", return_value=mock_agent
+            "wiggum.cli.get_agent", return_value=mock_agent
         ) as mock_get_agent:
             result = runner.invoke(
                 app,
@@ -223,7 +223,7 @@ class TestAgentConfigFromFile:
         mock_agent.run.side_effect = complete_task
 
         with patch(
-            "ralph_loop.cli.get_agent", return_value=mock_agent
+            "wiggum.cli.get_agent", return_value=mock_agent
         ) as mock_get_agent:
             result = runner.invoke(
                 app,

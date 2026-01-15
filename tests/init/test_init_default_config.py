@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app, read_config
+from wiggum.cli import app, read_config
 
 runner = CliRunner()
 
@@ -25,7 +25,7 @@ class TestInitWritesDefaultLoopConfig:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 result = runner.invoke(
                     app,
                     ["init"],
@@ -55,7 +55,7 @@ class TestInitWritesDefaultLoopConfig:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 # Choose yolo mode (option 3) and confirm
                 result = runner.invoke(
                     app,
@@ -85,7 +85,7 @@ class TestInitWritesDefaultLoopConfig:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 result = runner.invoke(
                     app,
                     ["init"],

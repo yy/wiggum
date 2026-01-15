@@ -4,7 +4,7 @@ This tests that the init command correctly parses markdown output
 from Claude instead of TOML format.
 """
 
-from ralph_loop.cli import parse_markdown_from_output
+from wiggum.cli import parse_markdown_from_output
 
 
 class TestParseMarkdownFromOutput:

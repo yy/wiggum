@@ -100,6 +100,6 @@ def get_available_agents() -> list[str]:
 
 # Import agents module to trigger registration
 # This will be populated as we implement specific agents
-from ralph_loop.agents_claude import ClaudeAgent  # noqa: E402, F401
-from ralph_loop.agents_codex import CodexAgent  # noqa: E402, F401
-from ralph_loop.agents_gemini import GeminiAgent  # noqa: E402, F401
+from wiggum.agents_claude import ClaudeAgent  # noqa: E402, F401
+from wiggum.agents_codex import CodexAgent  # noqa: E402, F401
+from wiggum.agents_gemini import GeminiAgent  # noqa: E402, F401

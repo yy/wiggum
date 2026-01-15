@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app, parse_markdown_from_output
+from wiggum.cli import app, parse_markdown_from_output
 
 runner = CliRunner()
 
@@ -167,7 +167,7 @@ class TestMetapromptIncludesConstraintGuidance:
         metaprompt_path = Path("templates/META-PROMPT.md")
         if not metaprompt_path.exists():
             # Try package location
-            from ralph_loop.cli import get_templates_dir
+            from wiggum.cli import get_templates_dir
 
             metaprompt_path = get_templates_dir() / "META-PROMPT.md"
 
@@ -178,7 +178,7 @@ class TestMetapromptIncludesConstraintGuidance:
         """META-PROMPT.md should mention yolo as an option."""
         metaprompt_path = Path("templates/META-PROMPT.md")
         if not metaprompt_path.exists():
-            from ralph_loop.cli import get_templates_dir
+            from wiggum.cli import get_templates_dir
 
             metaprompt_path = get_templates_dir() / "META-PROMPT.md"
 
@@ -189,7 +189,7 @@ class TestMetapromptIncludesConstraintGuidance:
         """META-PROMPT.md should mention path restriction option."""
         metaprompt_path = Path("templates/META-PROMPT.md")
         if not metaprompt_path.exists():
-            from ralph_loop.cli import get_templates_dir
+            from wiggum.cli import get_templates_dir
 
             metaprompt_path = get_templates_dir() / "META-PROMPT.md"
 
@@ -200,7 +200,7 @@ class TestMetapromptIncludesConstraintGuidance:
         """META-PROMPT.md should mention internet access option."""
         metaprompt_path = Path("templates/META-PROMPT.md")
         if not metaprompt_path.exists():
-            from ralph_loop.cli import get_templates_dir
+            from wiggum.cli import get_templates_dir
 
             metaprompt_path = get_templates_dir() / "META-PROMPT.md"
 
@@ -242,7 +242,7 @@ Test project
 security_mode: yolo
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=claude_output
+                "wiggum.cli.run_claude_for_planning", return_value=claude_output
             ):
                 # Accept suggestions (y), confirm yolo mode (y)
                 result = runner.invoke(app, ["init"], input="y\ny\n")
@@ -283,7 +283,7 @@ security_mode: path_restricted
 allow_paths: src/,tests/
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=claude_output
+                "wiggum.cli.run_claude_for_planning", return_value=claude_output
             ):
                 # Accept suggestions (y)
                 result = runner.invoke(app, ["init"], input="y\n")
@@ -324,7 +324,7 @@ Sensitive project
 security_mode: conservative
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=claude_output
+                "wiggum.cli.run_claude_for_planning", return_value=claude_output
             ):
                 # Accept suggestions (y)
                 result = runner.invoke(app, ["init"], input="y\n")
@@ -366,7 +366,7 @@ security_mode: yolo
 internet_access: true
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=claude_output
+                "wiggum.cli.run_claude_for_planning", return_value=claude_output
             ):
                 result = runner.invoke(app, ["init"], input="y\ny\n")
 
@@ -404,7 +404,7 @@ Simple project
 - [ ] Build it
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=claude_output
+                "wiggum.cli.run_claude_for_planning", return_value=claude_output
             ):
                 # Accept suggestions for tasks (y), then manually choose conservative (1)
                 result = runner.invoke(app, ["init"], input="y\n1\n")

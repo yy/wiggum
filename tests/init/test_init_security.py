@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app
+from wiggum.cli import app
 
 runner = CliRunner()
 
@@ -28,7 +28,7 @@ class TestInitSecurityQuestions:
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
             # Mock Claude to avoid actually calling it
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 # Input: goal, doc files, task, empty line to end tasks, security choice (1=conservative)
                 result = runner.invoke(
                     app,
@@ -55,7 +55,7 @@ class TestInitSecurityQuestions:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 # Choose conservative mode (option 1)
                 result = runner.invoke(
                     app,
@@ -81,7 +81,7 @@ class TestInitSecurityQuestions:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 # Choose path-restricted mode (option 2) and provide paths
                 result = runner.invoke(
                     app,
@@ -107,7 +107,7 @@ class TestInitSecurityQuestions:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 # Choose YOLO mode (option 3), confirm the warning
                 result = runner.invoke(
                     app,
@@ -132,7 +132,7 @@ class TestInitSecurityQuestions:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 # Choose YOLO mode (option 3)
                 result = runner.invoke(
                     app,
@@ -158,7 +158,7 @@ class TestInitSecurityQuestions:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 # Choose YOLO mode (option 3) but decline at warning, then choose conservative
                 result = runner.invoke(
                     app,
@@ -243,7 +243,7 @@ class TestSecurityModeDisplay:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 result = runner.invoke(
                     app,
                     ["init"],

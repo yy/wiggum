@@ -11,8 +11,8 @@ from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.agents import AgentConfig, AgentResult
-from ralph_loop.cli import app
+from wiggum.agents import AgentConfig, AgentResult
+from wiggum.cli import app
 
 runner = CliRunner()
 
@@ -37,7 +37,7 @@ class TestCliUsesAgentAbstraction:
         mock_agent.run.side_effect = complete_task
 
         with patch(
-            "ralph_loop.cli.get_agent", return_value=mock_agent
+            "wiggum.cli.get_agent", return_value=mock_agent
         ) as mock_get_agent:
             result = runner.invoke(
                 app,
@@ -71,7 +71,7 @@ class TestCliUsesAgentAbstraction:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch("ralph_loop.cli.get_agent", return_value=mock_agent):
+        with patch("wiggum.cli.get_agent", return_value=mock_agent):
             result = runner.invoke(
                 app,
                 [
@@ -107,7 +107,7 @@ class TestCliUsesAgentAbstraction:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch("ralph_loop.cli.get_agent", return_value=mock_agent):
+        with patch("wiggum.cli.get_agent", return_value=mock_agent):
             runner.invoke(
                 app,
                 [
@@ -140,7 +140,7 @@ class TestCliUsesAgentAbstraction:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch("ralph_loop.cli.get_agent", return_value=mock_agent):
+        with patch("wiggum.cli.get_agent", return_value=mock_agent):
             runner.invoke(
                 app,
                 [
@@ -174,7 +174,7 @@ class TestCliUsesAgentAbstraction:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch("ralph_loop.cli.get_agent", return_value=mock_agent):
+        with patch("wiggum.cli.get_agent", return_value=mock_agent):
             runner.invoke(
                 app,
                 [
@@ -221,7 +221,7 @@ class TestCliUsesAgentAbstraction:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch("ralph_loop.cli.get_agent", return_value=mock_agent):
+        with patch("wiggum.cli.get_agent", return_value=mock_agent):
             runner.invoke(
                 app,
                 [

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app
+from wiggum.cli import app
 
 runner = CliRunner()
 
@@ -33,7 +33,7 @@ class TestVerboseFlag:
             return MagicMock(returncode=0, stdout="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -72,7 +72,7 @@ class TestVerboseFlag:
             return MagicMock(returncode=0, stdout="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -138,7 +138,7 @@ class TestShowProgressFlag:
             return MagicMock(returncode=0, stdout="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -178,7 +178,7 @@ class TestShowProgressFlag:
             return MagicMock(returncode=0, stdout="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -216,7 +216,7 @@ class TestProgressOutput:
             return MagicMock(returncode=0, stdout="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -253,7 +253,7 @@ class TestProgressOutput:
             return MagicMock(returncode=0, stdout="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -288,7 +288,7 @@ class TestProgressOutput:
             return MagicMock(returncode=0, stdout="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -323,7 +323,7 @@ class TestProgressOutput:
             return MagicMock(returncode=0, stdout="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -366,7 +366,7 @@ class TestNonGitDirectory:
             return MagicMock(returncode=0, stdout="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,
@@ -422,7 +422,7 @@ class TestProgressMultipleIterations:
             return MagicMock(returncode=0, stdout="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ):
             result = runner.invoke(
                 app,

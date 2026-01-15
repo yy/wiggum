@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app
+from wiggum.cli import app
 
 runner = CliRunner()
 
@@ -51,7 +51,7 @@ Test goal
 - [ ] Another new task
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 # Accept Claude's suggestions, choose conservative security
                 result = runner.invoke(
@@ -105,7 +105,7 @@ Test goal
 - [ ] Brand new task
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 result = runner.invoke(
                     app,
@@ -157,7 +157,7 @@ Test goal
 - [ ] New task
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 result = runner.invoke(
                     app,
@@ -192,7 +192,7 @@ Test goal
             # Create existing LOOP-PROMPT.md
             Path("LOOP-PROMPT.md").write_text("Existing loop prompt")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 result = runner.invoke(
                     app,
                     ["init"],
@@ -233,7 +233,7 @@ Test goal
 - [ ] New task only
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 result = runner.invoke(
                     app,
@@ -276,7 +276,7 @@ Test goal
 - [ ] New task
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 result = runner.invoke(
                     app,
@@ -308,7 +308,7 @@ Test goal
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n- [ ] Old task\n")
 
             # Claude returns nothing, so user enters manually
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 result = runner.invoke(
                     app,
                     ["init"],

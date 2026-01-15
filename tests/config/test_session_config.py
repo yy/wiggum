@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app, read_config, write_config
+from wiggum.cli import app, read_config, write_config
 
 runner = CliRunner()
 
@@ -161,7 +161,7 @@ class TestSessionConfigRunCommand:
             return MagicMock(returncode=0, stdout="", stderr="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ) as mock_run:
             result = runner.invoke(app, ["run"])
 
@@ -198,7 +198,7 @@ class TestSessionConfigRunCommand:
             return MagicMock(returncode=0, stdout="", stderr="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ) as mock_run:
             result = runner.invoke(app, ["run", "--continue"])
 
@@ -233,7 +233,7 @@ class TestSessionConfigRunCommand:
             return MagicMock(returncode=0, stdout="", stderr="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ) as mock_run:
             result = runner.invoke(app, ["run", "--reset"])
 
@@ -270,7 +270,7 @@ class TestSessionConfigRunCommand:
             return MagicMock(returncode=0, stdout="", stderr="")
 
         with patch(
-            "ralph_loop.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
         ) as mock_run:
             result = runner.invoke(app, ["run"])
 

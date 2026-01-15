@@ -6,7 +6,7 @@ language to support multiple coding agents (Claude, Codex, Gemini, etc.).
 
 from pathlib import Path
 
-from ralph_loop.config import get_templates_dir
+from wiggum.config import get_templates_dir
 
 
 def _get_template_path(filename: str) -> Path:

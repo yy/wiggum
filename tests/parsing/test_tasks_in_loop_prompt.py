@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from ralph_loop.cli import app
+from wiggum.cli import app
 
 runner = CliRunner()
 
@@ -41,7 +41,7 @@ class TestTasksEmbeddingInLoopPrompt:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 result = runner.invoke(
                     app,
                     ["init"],
@@ -88,7 +88,7 @@ Build a REST API
 - [ ] Implement user endpoints
 ```"""
             with patch(
-                "ralph_loop.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=mock_output
             ):
                 # Accept Claude's suggestions with 'y', then conservative mode
                 result = runner.invoke(
@@ -122,7 +122,7 @@ Build a REST API
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 # Empty task input (just press enter)
                 result = runner.invoke(
                     app,
@@ -152,7 +152,7 @@ Build a REST API
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("ralph_loop.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
                 result = runner.invoke(
                     app,
                     ["init"],
