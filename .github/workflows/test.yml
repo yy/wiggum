@@ -24,7 +24,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --all-groups
 
       - name: Run tests
         run: mkdir -p test-results && uv run pytest -q --junitxml=test-results/pytest.xml
