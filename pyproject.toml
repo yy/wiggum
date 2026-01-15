@@ -36,9 +36,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yy/ralph-loop"
-Repository = "https://github.com/yy/ralph-loop"
-Issues = "https://github.com/yy/ralph-loop/issues"
+Homepage = "https://github.com/yy/wiggum"
+Repository = "https://github.com/yy/wiggum"
+Issues = "https://github.com/yy/wiggum/issues"
 
 [project.scripts]
 wiggum = "wiggum.cli:app"
