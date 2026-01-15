@@ -1,0 +1,40 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Build package
+        run: uv build
+
+      - name: Verify build artifacts
+        run: |
+          echo "Listing contents of dist directory:"
+          ls -R dist
+
+          # Ensure at least one wheel file exists
+          if ! ls dist/*.whl >/dev/null 2>&1; then
+            echo "Error: No wheel (.whl) files found in dist/"
+            exit 1
+          fi
+
+          # Ensure at least one source distribution exists
+          if ! ls dist/*.tar.gz >/dev/null 2>&1; then
+            echo "Error: No source distribution (.tar.gz) files found in dist/"
+            exit 1
+          fi
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
