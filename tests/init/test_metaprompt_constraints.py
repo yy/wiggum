@@ -247,7 +247,7 @@ security_mode: yolo
                 # Accept suggestions (y), confirm yolo mode (y)
                 result = runner.invoke(app, ["init"], input="y\ny\n")
 
-            config_file = Path(".ralph-loop.toml")
+            config_file = Path(".wiggum.toml")
             assert config_file.exists(), f"Config not created. Output: {result.output}"
             content = config_file.read_text()
             assert "yolo = true" in content
@@ -288,7 +288,7 @@ allow_paths: src/,tests/
                 # Accept suggestions (y)
                 result = runner.invoke(app, ["init"], input="y\n")
 
-            config_file = Path(".ralph-loop.toml")
+            config_file = Path(".wiggum.toml")
             assert config_file.exists(), f"Config not created. Output: {result.output}"
             content = config_file.read_text()
             assert "src/" in content
@@ -329,7 +329,7 @@ security_mode: conservative
                 # Accept suggestions (y)
                 result = runner.invoke(app, ["init"], input="y\n")
 
-            config_file = Path(".ralph-loop.toml")
+            config_file = Path(".wiggum.toml")
             assert config_file.exists(), f"Config not created. Output: {result.output}"
             content = config_file.read_text()
             assert "yolo = false" in content
@@ -410,5 +410,5 @@ Simple project
                 result = runner.invoke(app, ["init"], input="y\n1\n")
 
             # Should still have created config with manual selection
-            config_file = Path(".ralph-loop.toml")
+            config_file = Path(".wiggum.toml")
             assert config_file.exists()

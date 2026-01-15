@@ -65,7 +65,7 @@ class TestInitWritesDefaultLoopConfig:
 
             assert result.exit_code == 0, f"Init failed: {result.output}"
 
-            config_file = Path(".ralph-loop.toml")
+            config_file = Path(".wiggum.toml")
             content = config_file.read_text()
 
             # Should have both sections
@@ -94,6 +94,6 @@ class TestInitWritesDefaultLoopConfig:
 
             assert result.exit_code == 0
 
-            content = Path(".ralph-loop.toml").read_text()
+            content = Path(".wiggum.toml").read_text()
             # Should have the expected format
             assert "max_iterations = 10" in content

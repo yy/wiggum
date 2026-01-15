@@ -1,4 +1,4 @@
-"""Tests for [output] section in .ralph-loop.toml configuration."""
+"""Tests for [output] section in .wiggum.toml configuration."""
 
 import os
 from pathlib import Path
@@ -20,7 +20,7 @@ def restore_cwd():
 
 
 class TestOutputConfigReading:
-    """Tests for reading [output] config from .ralph-loop.toml."""
+    """Tests for reading [output] config from .wiggum.toml."""
 
     def test_read_output_section_log_file(self, tmp_path: Path) -> None:
         """read_config returns log_file from [output] section."""
@@ -31,7 +31,7 @@ yolo = false
 log_file = "loop.log"
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -43,7 +43,7 @@ log_file = "loop.log"
 verbose = true
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -55,7 +55,7 @@ verbose = true
 verbose = false
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -75,7 +75,7 @@ log_file = "my-loop.log"
 verbose = true
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -84,7 +84,7 @@ verbose = true
 
 
 class TestOutputConfigWriting:
-    """Tests for writing [output] config to .ralph-loop.toml."""
+    """Tests for writing [output] config to .wiggum.toml."""
 
     def test_write_output_section(self, tmp_path: Path) -> None:
         """write_config writes [output] section to file."""
@@ -100,7 +100,7 @@ class TestOutputConfigWriting:
             }
         )
 
-        content = (tmp_path / ".ralph-loop.toml").read_text()
+        content = (tmp_path / ".wiggum.toml").read_text()
         assert "[output]" in content
         assert 'log_file = "output.log"' in content
         assert "verbose = true" in content
@@ -116,7 +116,7 @@ class TestOutputConfigWriting:
             }
         )
 
-        content = (tmp_path / ".ralph-loop.toml").read_text()
+        content = (tmp_path / ".wiggum.toml").read_text()
         assert "[output]" in content
         assert "verbose = true" in content
         # Should not include fields that weren't set
@@ -134,7 +134,7 @@ class TestOutputConfigWriting:
             }
         )
 
-        content = (tmp_path / ".ralph-loop.toml").read_text()
+        content = (tmp_path / ".wiggum.toml").read_text()
         assert "[security]" in content
         assert "[loop]" in content
         assert "[output]" in content
@@ -154,7 +154,7 @@ class TestOutputConfigRunCommand:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text('[output]\nlog_file = "loop.log"\n')
 
         result = runner.invoke(app, ["run", "--dry-run"])
@@ -169,7 +169,7 @@ class TestOutputConfigRunCommand:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text('[output]\nlog_file = "config.log"\n')
 
         result = runner.invoke(app, ["run", "--dry-run", "--log-file", "cli.log"])
@@ -185,7 +185,7 @@ class TestOutputConfigRunCommand:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[output]\nverbose = true\n")
 
         result = runner.invoke(app, ["run", "--dry-run"])
@@ -201,7 +201,7 @@ class TestOutputConfigRunCommand:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[output]\nverbose = false\n")
 
         result = runner.invoke(app, ["run", "--dry-run", "-v"])
@@ -218,7 +218,7 @@ class TestOutputConfigRunCommand:
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] done\n")
         # Config without [output] section
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[security]\nyolo = false\n")
 
         result = runner.invoke(app, ["run", "--dry-run"])

@@ -7,8 +7,8 @@ def test_readme_documents_core_workflow() -> None:
     """README should document the core workflow: init and run."""
     readme = Path("README.md").read_text()
 
-    assert "ralph-loop init" in readme
-    assert "ralph-loop run" in readme
+    assert "wiggum init" in readme
+    assert "wiggum run" in readme
 
 
 def test_readme_mentions_key_concepts() -> None:

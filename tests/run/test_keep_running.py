@@ -57,7 +57,9 @@ class TestKeepRunningFlag:
             call_count += 1
             return MagicMock(returncode=0, stdout="", stderr="")
 
-        with patch("wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run):
+        with patch(
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+        ):
             result = runner.invoke(
                 app,
                 [
@@ -94,7 +96,9 @@ class TestKeepRunningFlag:
                 tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] task1\n")
             return MagicMock(returncode=0, stdout="", stderr="")
 
-        with patch("wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run):
+        with patch(
+            "wiggum.agents_claude.subprocess.run", side_effect=mock_subprocess_run
+        ):
             result = runner.invoke(
                 app,
                 [
@@ -205,7 +209,7 @@ class TestKeepRunningDryRun:
 
 
 class TestKeepRunningConfig:
-    """Tests for keep_running in .ralph-loop.toml configuration."""
+    """Tests for keep_running in .wiggum.toml configuration."""
 
     def test_config_keep_running_true_continues_loop(self, tmp_path: Path) -> None:
         """Config with keep_running = true continues loop when tasks complete."""
@@ -213,7 +217,7 @@ class TestKeepRunningConfig:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[loop]\nkeep_running = true\n")
 
         call_count = 0
@@ -257,7 +261,7 @@ class TestKeepRunningConfig:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[loop]\nkeep_running = true\n")
 
         import os

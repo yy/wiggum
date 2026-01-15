@@ -2,7 +2,7 @@
 
 Tests verify:
 1. --agent CLI flag selects the agent to use
-2. agent setting in .ralph-loop.toml [loop] section
+2. agent setting in .wiggum.toml [loop] section
 3. CLI flag overrides config file setting
 4. Default to "claude" when no agent specified
 5. Error message for unknown agents
@@ -32,7 +32,7 @@ def restore_cwd():
 
 
 class TestAgentConfigReading:
-    """Tests for reading agent config from .ralph-loop.toml."""
+    """Tests for reading agent config from .wiggum.toml."""
 
     def test_read_agent_from_loop_section(self, tmp_path: Path) -> None:
         """read_config returns agent from [loop] section."""
@@ -40,7 +40,7 @@ class TestAgentConfigReading:
 agent = "codex"
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -56,7 +56,7 @@ max_iterations = 25
 agent = "gemini"
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -65,7 +65,7 @@ agent = "gemini"
 
 
 class TestAgentConfigWriting:
-    """Tests for writing agent config to .ralph-loop.toml."""
+    """Tests for writing agent config to .wiggum.toml."""
 
     def test_write_agent_to_loop_section(self, tmp_path: Path) -> None:
         """write_config writes agent to [loop] section."""
@@ -78,7 +78,7 @@ class TestAgentConfigWriting:
             }
         )
 
-        content = (tmp_path / ".ralph-loop.toml").read_text()
+        content = (tmp_path / ".wiggum.toml").read_text()
         assert "[loop]" in content
         assert 'agent = "codex"' in content
 
@@ -103,9 +103,7 @@ class TestAgentCliFlag:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch(
-            "wiggum.cli.get_agent", return_value=mock_agent
-        ) as mock_get_agent:
+        with patch("wiggum.cli.get_agent", return_value=mock_agent) as mock_get_agent:
             result = runner.invoke(
                 app,
                 [
@@ -141,9 +139,7 @@ class TestAgentCliFlag:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch(
-            "wiggum.cli.get_agent", return_value=mock_agent
-        ) as mock_get_agent:
+        with patch("wiggum.cli.get_agent", return_value=mock_agent) as mock_get_agent:
             result = runner.invoke(
                 app,
                 [
@@ -172,7 +168,7 @@ class TestAgentConfigFromFile:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text('[loop]\nagent = "gemini"\n')
 
         mock_agent = MagicMock()
@@ -184,9 +180,7 @@ class TestAgentConfigFromFile:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch(
-            "wiggum.cli.get_agent", return_value=mock_agent
-        ) as mock_get_agent:
+        with patch("wiggum.cli.get_agent", return_value=mock_agent) as mock_get_agent:
             result = runner.invoke(
                 app,
                 [
@@ -210,7 +204,7 @@ class TestAgentConfigFromFile:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text('[loop]\nagent = "gemini"\n')
 
         mock_agent = MagicMock()
@@ -222,9 +216,7 @@ class TestAgentConfigFromFile:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch(
-            "wiggum.cli.get_agent", return_value=mock_agent
-        ) as mock_get_agent:
+        with patch("wiggum.cli.get_agent", return_value=mock_agent) as mock_get_agent:
             result = runner.invoke(
                 app,
                 [
@@ -303,7 +295,7 @@ class TestAgentDryRun:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text('[loop]\nagent = "gemini"\n')
 
         result = runner.invoke(

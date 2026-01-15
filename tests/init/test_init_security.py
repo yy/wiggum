@@ -16,7 +16,7 @@ class TestInitSecurityQuestions:
     def test_init_creates_config_file_with_security_settings(
         self, tmp_path: Path
     ) -> None:
-        """Init creates a .ralph-loop.toml config file with security settings."""
+        """Init creates a .wiggum.toml config file with security settings."""
         with runner.isolated_filesystem(temp_dir=tmp_path):
             Path("templates").mkdir()
             (Path("templates") / "LOOP-PROMPT.md").write_text(
@@ -36,7 +36,7 @@ class TestInitSecurityQuestions:
                     input="Test project goal\nREADME.md\nTask 1\n\n1\n",
                 )
 
-            config_file = Path(".ralph-loop.toml")
+            config_file = Path(".wiggum.toml")
             assert config_file.exists(), (
                 f"Config file not created. Output: {result.output}"
             )
@@ -63,7 +63,7 @@ class TestInitSecurityQuestions:
                     input="Test project\nREADME.md\nTask 1\n\n1\n",
                 )
 
-            config_file = Path(".ralph-loop.toml")
+            config_file = Path(".wiggum.toml")
             assert config_file.exists()
             content = config_file.read_text()
             assert "yolo = false" in content
@@ -89,7 +89,7 @@ class TestInitSecurityQuestions:
                     input="Test project\nREADME.md\nTask 1\n\n2\nsrc/,tests/\n",
                 )
 
-            config_file = Path(".ralph-loop.toml")
+            config_file = Path(".wiggum.toml")
             assert config_file.exists(), f"Config not created. Output: {result.output}"
             content = config_file.read_text()
             assert "src/" in content
@@ -115,7 +115,7 @@ class TestInitSecurityQuestions:
                     input="Test project\nREADME.md\nTask 1\n\n3\ny\n",
                 )
 
-            config_file = Path(".ralph-loop.toml")
+            config_file = Path(".wiggum.toml")
             assert config_file.exists(), f"Config not created. Output: {result.output}"
             content = config_file.read_text()
             assert "yolo = true" in content
@@ -166,7 +166,7 @@ class TestInitSecurityQuestions:
                     input="Test project\nREADME.md\nTask 1\n\n3\nn\n1\n",
                 )
 
-            config_file = Path(".ralph-loop.toml")
+            config_file = Path(".wiggum.toml")
             assert config_file.exists()
             content = config_file.read_text()
             # Should NOT have yolo = true since user cancelled
@@ -174,13 +174,13 @@ class TestInitSecurityQuestions:
 
 
 class TestRunReadsConfigFile:
-    """Tests that run command reads from .ralph-loop.toml config."""
+    """Tests that run command reads from .wiggum.toml config."""
 
     def test_run_uses_config_yolo_setting(self, tmp_path: Path) -> None:
         """Run command uses yolo setting from config file."""
         with runner.isolated_filesystem(temp_dir=tmp_path):
             # Create config file with yolo mode
-            Path(".ralph-loop.toml").write_text("[security]\nyolo = true\n")
+            Path(".wiggum.toml").write_text("[security]\nyolo = true\n")
             Path("LOOP-PROMPT.md").write_text("Test prompt")
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n- [ ] Task 1\n")
 
@@ -192,9 +192,7 @@ class TestRunReadsConfigFile:
         """Run command uses allow_paths setting from config file."""
         with runner.isolated_filesystem(temp_dir=tmp_path):
             # Create config file with allowed paths
-            Path(".ralph-loop.toml").write_text(
-                '[security]\nallow_paths = "src/,tests/"\n'
-            )
+            Path(".wiggum.toml").write_text('[security]\nallow_paths = "src/,tests/"\n')
             Path("LOOP-PROMPT.md").write_text("Test prompt")
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n- [ ] Task 1\n")
 
@@ -207,7 +205,7 @@ class TestRunReadsConfigFile:
         """CLI flags override config file settings."""
         with runner.isolated_filesystem(temp_dir=tmp_path):
             # Create config file with conservative mode
-            Path(".ralph-loop.toml").write_text("[security]\nyolo = false\n")
+            Path(".wiggum.toml").write_text("[security]\nyolo = false\n")
             Path("LOOP-PROMPT.md").write_text("Test prompt")
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n- [ ] Task 1\n")
 

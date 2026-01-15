@@ -1,4 +1,4 @@
-"""Tests for [session] section in .ralph-loop.toml configuration."""
+"""Tests for [session] section in .wiggum.toml configuration."""
 
 import os
 from pathlib import Path
@@ -21,7 +21,7 @@ def restore_cwd():
 
 
 class TestSessionConfigReading:
-    """Tests for reading [session] config from .ralph-loop.toml."""
+    """Tests for reading [session] config from .wiggum.toml."""
 
     def test_read_session_section_continue_session_true(self, tmp_path: Path) -> None:
         """read_config returns continue_session=true from [session] section."""
@@ -32,7 +32,7 @@ yolo = false
 continue_session = true
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -44,7 +44,7 @@ continue_session = true
 continue_session = false
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -67,7 +67,7 @@ verbose = true
 continue_session = true
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -78,7 +78,7 @@ continue_session = true
 
 
 class TestSessionConfigWriting:
-    """Tests for writing [session] config to .ralph-loop.toml."""
+    """Tests for writing [session] config to .wiggum.toml."""
 
     def test_write_session_section(self, tmp_path: Path) -> None:
         """write_config writes [session] section to file."""
@@ -91,7 +91,7 @@ class TestSessionConfigWriting:
             }
         )
 
-        content = (tmp_path / ".ralph-loop.toml").read_text()
+        content = (tmp_path / ".wiggum.toml").read_text()
         assert "[session]" in content
         assert "continue_session = true" in content
 
@@ -106,7 +106,7 @@ class TestSessionConfigWriting:
             }
         )
 
-        content = (tmp_path / ".ralph-loop.toml").read_text()
+        content = (tmp_path / ".wiggum.toml").read_text()
         assert "[session]" in content
         assert "continue_session = false" in content
 
@@ -123,7 +123,7 @@ class TestSessionConfigWriting:
             }
         )
 
-        content = (tmp_path / ".ralph-loop.toml").read_text()
+        content = (tmp_path / ".wiggum.toml").read_text()
         assert "[security]" in content
         assert "[loop]" in content
         assert "[output]" in content
@@ -141,7 +141,7 @@ class TestSessionConfigRunCommand:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n- [ ] task2\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[session]\ncontinue_session = true\n")
 
         call_count = 0
@@ -179,7 +179,7 @@ class TestSessionConfigRunCommand:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n- [ ] task2\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[session]\ncontinue_session = false\n")
 
         call_count = 0
@@ -214,7 +214,7 @@ class TestSessionConfigRunCommand:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n- [ ] task2\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[session]\ncontinue_session = true\n")
 
         call_count = 0
@@ -251,7 +251,7 @@ class TestSessionConfigRunCommand:
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n- [ ] task2\n")
         # Config without [session] section
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[security]\nyolo = false\n")
 
         call_count = 0
@@ -285,7 +285,7 @@ class TestSessionConfigRunCommand:
         os.chdir(tmp_path)
         prompt_file = tmp_path / "LOOP-PROMPT.md"
         prompt_file.write_text("test prompt")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[session]\ncontinue_session = true\n")
 
         result = runner.invoke(app, ["run", "--dry-run"])

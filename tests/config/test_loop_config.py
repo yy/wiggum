@@ -1,4 +1,4 @@
-"""Tests for [loop] section in .ralph-loop.toml configuration."""
+"""Tests for [loop] section in .wiggum.toml configuration."""
 
 import os
 from pathlib import Path
@@ -21,7 +21,7 @@ def restore_cwd():
 
 
 class TestLoopConfigReading:
-    """Tests for reading [loop] config from .ralph-loop.toml."""
+    """Tests for reading [loop] config from .wiggum.toml."""
 
     def test_read_loop_section_max_iterations(self, tmp_path: Path) -> None:
         """read_config returns max_iterations from [loop] section."""
@@ -32,7 +32,7 @@ yolo = false
 max_iterations = 25
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -44,7 +44,7 @@ max_iterations = 25
 tasks_file = "CUSTOM_TASKS.md"
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -56,7 +56,7 @@ tasks_file = "CUSTOM_TASKS.md"
 prompt_file = "MY-PROMPT.md"
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -74,7 +74,7 @@ tasks_file = "TODO.md"
 prompt_file = "AGENT-PROMPT.md"
 """
         os.chdir(tmp_path)
-        (tmp_path / ".ralph-loop.toml").write_text(config_content)
+        (tmp_path / ".wiggum.toml").write_text(config_content)
 
         config = read_config()
 
@@ -84,7 +84,7 @@ prompt_file = "AGENT-PROMPT.md"
 
 
 class TestLoopConfigWriting:
-    """Tests for writing [loop] config to .ralph-loop.toml."""
+    """Tests for writing [loop] config to .wiggum.toml."""
 
     def test_write_loop_section(self, tmp_path: Path) -> None:
         """write_config writes [loop] section to file."""
@@ -101,7 +101,7 @@ class TestLoopConfigWriting:
             }
         )
 
-        content = (tmp_path / ".ralph-loop.toml").read_text()
+        content = (tmp_path / ".wiggum.toml").read_text()
         assert "[loop]" in content
         assert "max_iterations = 15" in content
         assert 'tasks_file = "TASKS.md"' in content
@@ -118,7 +118,7 @@ class TestLoopConfigWriting:
             }
         )
 
-        content = (tmp_path / ".ralph-loop.toml").read_text()
+        content = (tmp_path / ".wiggum.toml").read_text()
         assert "[loop]" in content
         assert "max_iterations = 20" in content
         # Should not include fields that weren't set
@@ -136,7 +136,7 @@ class TestLoopConfigRunCommand:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[loop]\nmax_iterations = 3\n")
 
         with patch("wiggum.agents_claude.subprocess.run") as mock_run:
@@ -156,7 +156,7 @@ class TestLoopConfigRunCommand:
         prompt_file.write_text("test prompt")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text("[loop]\nmax_iterations = 100\n")
 
         result = runner.invoke(app, ["run", "--dry-run", "-n", "5"])
@@ -173,7 +173,7 @@ class TestLoopConfigRunCommand:
         # Only create the custom tasks file from config
         custom_tasks = tmp_path / "CUSTOM_TASKS.md"
         custom_tasks.write_text("# Tasks\n\n## Done\n\n- [x] done\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text('[loop]\ntasks_file = "CUSTOM_TASKS.md"\n')
 
         result = runner.invoke(app, ["run", "--dry-run"])
@@ -189,7 +189,7 @@ class TestLoopConfigRunCommand:
         prompt_file.write_text("test prompt")
         cli_tasks = tmp_path / "CLI_TASKS.md"
         cli_tasks.write_text("# Tasks\n\n## Done\n\n- [x] done\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text('[loop]\ntasks_file = "CONFIG_TASKS.md"\n')
 
         result = runner.invoke(app, ["run", "--dry-run", "--tasks", str(cli_tasks)])
@@ -206,7 +206,7 @@ class TestLoopConfigRunCommand:
         custom_prompt.write_text("custom prompt content")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] done\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text('[loop]\nprompt_file = "MY-PROMPT.md"\n')
 
         result = runner.invoke(app, ["run", "--dry-run"])
@@ -224,7 +224,7 @@ class TestLoopConfigRunCommand:
         config_prompt.write_text("config prompt content")
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] done\n")
-        config_file = tmp_path / ".ralph-loop.toml"
+        config_file = tmp_path / ".wiggum.toml"
         config_file.write_text('[loop]\nprompt_file = "config-prompt.md"\n')
 
         result = runner.invoke(app, ["run", "--dry-run", "-f", str(cli_prompt)])
