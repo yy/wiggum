@@ -9,28 +9,26 @@
 ## Workflow
 
 1. Read TASKS.md to see the current task list
-2. Identify the highest priority incomplete task
-3. Define what "done" looks like for this task (acceptance criteria)
-4. Write tests FIRST that verify the acceptance criteria
-5. Run tests - they should fail (red)
-6. Implement the task
-7. Run tests - they must pass (green)
-8. Only after tests pass: Update TASKS.md to mark the task complete
-9. Update documentation ({{doc_files}}) to reflect changes
-10. Review recent changes for refactoring opportunities: look for code that could be simplified, cleanup needed, or better organization
-11. If you discover new tasks while working, add them to TASKS.md
+2. Choose the most important task - prioritize upstream/blocking tasks and dependencies over file order
+3. Determine the appropriate "done" criteria for this task:
+   - **New behavior/logic/APIs/bug fixes**: Write tests first, then implement
+   - **Renames, config changes, string updates**: Just verify the change works
+   - **Documentation**: Review for accuracy and completeness
+4. Implement the task with the appropriate approach
+5. Cleanup and refactor before completing:
+   - Remove dead code and unused imports you introduced
+   - Simplify overly complex logic - if a function grew too large, break it up
+   - Consolidate duplicates - extract repeated code into shared functions
+   - Delete trivial tests that don't verify behavior (e.g., tests that only check string presence or file existence)
+   - Ensure the code is production-ready, not just "works"
+6. Run tests to verify nothing broke
+7. Update TASKS.md to mark the task complete
+8. Update documentation ({{doc_files}}) to reflect changes
+9. If you discover new tasks while working, add them to TASKS.md
 
 ## Rules
 
 - Only work on ONE task per session. If you discover tasks that should be done, add them to TASKS.md.
-- If blocked, identify the task that's blocking the current, update TASKS.md and then move on to another task or the task that you have just identified. 
-- NEVER mark a task complete unless tests pass
+- If blocked, identify the blocking task, update TASKS.md, and work on the blocker first.
 - Keep documentation in sync with implementation
 - New tasks go in the Todo section with clear descriptions
-
-## Test Requirements
-
-- Every task must have tests before implementation
-- Tests must be runnable with a single command
-- Tests must pass before a task can be marked done
-- If existing tests break, fix them before proceeding
