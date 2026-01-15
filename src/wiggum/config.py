@@ -2,11 +2,11 @@
 
 from pathlib import Path
 
-CONFIG_FILE = ".ralph-loop.toml"
+CONFIG_FILE = ".wiggum.toml"
 
 
 def read_config() -> dict:
-    """Read configuration from .ralph-loop.toml.
+    """Read configuration from .wiggum.toml.
 
     Returns:
         Configuration dict with 'security' section containing 'yolo' and 'allow_paths'.
@@ -28,7 +28,7 @@ def read_config() -> dict:
 
 
 def write_config(config: dict) -> None:
-    """Write configuration to .ralph-loop.toml.
+    """Write configuration to .wiggum.toml.
 
     Args:
         config: Configuration dict to write.
