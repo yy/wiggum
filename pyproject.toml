@@ -1,6 +1,6 @@
 [project]
 name = "wiggum"
-version = "0.2.2"
+version = "0.3.0"
 description = "Run iterative agent loops with task tracking"
 readme = "README.md"
 license = "MIT"
