@@ -4,8 +4,56 @@ This module defines the interface for running different coding agents
 (Claude, Codex, Gemini, etc.) with a common input/output contract.
 """
 
+import shutil
 from dataclasses import dataclass
 from typing import Optional, Protocol, runtime_checkable
+
+
+# Error messages for known CLIs with installation instructions
+_CLI_ERROR_MESSAGES: dict[str, str] = {
+    "claude": (
+        "Error: 'claude' command not found. "
+        "Is Claude Code installed? Visit: https://claude.ai/code"
+    ),
+    "codex": (
+        "Error: 'codex' command not found. "
+        "Is OpenAI Codex CLI installed? Run: npm install -g @openai/codex"
+    ),
+    "gemini": (
+        "Error: 'gemini' command not found. "
+        "Is Gemini CLI installed? Visit: https://github.com/google-gemini/gemini-cli"
+    ),
+    "gh": (
+        "Error: 'gh' command not found. "
+        "Is GitHub CLI installed? Visit: https://cli.github.com/"
+    ),
+}
+
+
+def check_cli_available(cli_name: str) -> bool:
+    """Check if a CLI command is available in PATH.
+
+    Args:
+        cli_name: The name of the CLI to check (e.g., 'claude', 'gh').
+
+    Returns:
+        True if the CLI is found in PATH, False otherwise.
+    """
+    return shutil.which(cli_name) is not None
+
+
+def get_cli_error_message(cli_name: str) -> str:
+    """Get a helpful error message for a missing CLI.
+
+    Args:
+        cli_name: The name of the CLI that's missing.
+
+    Returns:
+        A user-friendly error message with installation hints.
+    """
+    if cli_name in _CLI_ERROR_MESSAGES:
+        return _CLI_ERROR_MESSAGES[cli_name]
+    return f"Error: '{cli_name}' command not found. Please install it and try again."
 
 
 @dataclass

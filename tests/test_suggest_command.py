@@ -30,7 +30,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file), "--yes"],
@@ -57,7 +59,9 @@ security_mode: yolo
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file), "--yes"],
@@ -85,7 +89,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file), "--yes"],
@@ -116,7 +122,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file), "--yes"],
@@ -141,7 +149,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file), "--yes"],
@@ -169,7 +179,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file), "--yes"],
@@ -192,7 +204,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file), "--yes"],
@@ -202,19 +216,23 @@ security_mode: conservative
         assert "No tasks suggested" in result.output
 
     def test_suggest_handles_claude_failure(self, tmp_path: Path) -> None:
-        """Handles case when Claude returns no output."""
+        """Handles case when Claude CLI is not available."""
         tasks_file = tmp_path / "TASKS.md"
         tasks_file.write_text("# Tasks\n\n## Todo\n\n")
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
+            with patch(
+                "wiggum.cli.run_claude_for_planning",
+                return_value=(None, "Error: 'claude' command not found."),
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file), "--yes"],
                 )
 
         assert result.exit_code == 1
-        assert "Could not get suggestions" in result.output
+        assert "claude" in result.output.lower()
+        assert "not found" in result.output.lower()
 
     def test_suggest_uses_default_tasks_file(self, tmp_path: Path) -> None:
         """Uses TASKS.md in current directory by default."""
@@ -230,7 +248,9 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n")
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(app, ["suggest", "--yes"])
             content = Path("TASKS.md").read_text()
 
@@ -253,7 +273,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "-f", str(tasks_file), "-y"],
@@ -278,7 +300,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file), "--yes"],
@@ -306,7 +330,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file), "--yes"],
@@ -336,7 +362,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 # Accept first, reject second
                 result = runner.invoke(
                     app,
@@ -367,7 +395,9 @@ security_mode: conservative
 ```"""
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["suggest", "--tasks-file", str(tasks_file)],
@@ -401,7 +431,7 @@ security_mode: conservative
 
         def capture_prompt(prompt: str):
             captured_prompt.append(prompt)
-            return mock_output
+            return (mock_output, None)
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             # Copy README to isolated filesystem

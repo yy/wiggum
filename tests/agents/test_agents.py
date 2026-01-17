@@ -167,3 +167,40 @@ class TestAgentRegistry:
         """get_agent should raise ValueError for unknown agent."""
         with pytest.raises(ValueError, match="Unknown agent"):
             get_agent("unknown_agent")
+
+
+class TestCheckCliAvailable:
+    """Tests for the check_cli_available function."""
+
+    def test_returns_true_for_existing_cli(self):
+        """Should return True for a CLI that exists (e.g., python)."""
+        from wiggum.agents import check_cli_available
+
+        # 'python' should always be available in test environment
+        assert check_cli_available("python") is True
+
+    def test_returns_false_for_nonexistent_cli(self):
+        """Should return False for a CLI that doesn't exist."""
+        from wiggum.agents import check_cli_available
+
+        assert (
+            check_cli_available("nonexistent_cli_that_surely_does_not_exist") is False
+        )
+
+    def test_returns_cli_specific_error_message(self):
+        """Should return helpful error message for known CLIs."""
+        from wiggum.agents import get_cli_error_message
+
+        # Test known CLIs have specific messages
+        assert "Claude Code" in get_cli_error_message("claude")
+        assert "OpenAI Codex" in get_cli_error_message("codex")
+        assert "Gemini CLI" in get_cli_error_message("gemini")
+        assert "GitHub CLI" in get_cli_error_message("gh")
+
+    def test_returns_generic_message_for_unknown_cli(self):
+        """Should return generic message for unknown CLIs."""
+        from wiggum.agents import get_cli_error_message
+
+        msg = get_cli_error_message("some_random_cli")
+        assert "some_random_cli" in msg
+        assert "not found" in msg.lower()

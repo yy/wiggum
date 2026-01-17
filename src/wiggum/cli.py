@@ -6,7 +6,11 @@ from typing import Optional
 
 import typer
 
-from wiggum.agents import AgentConfig, get_agent, get_available_agents
+from wiggum.agents import (
+    AgentConfig,
+    get_agent,
+    get_available_agents,
+)
 from wiggum.config import (
     CONFIG_FILE,
     resolve_run_config,
@@ -203,6 +207,13 @@ def run(
         typer.echo(f"Prompt:\n---\n{prompt}\n---")
         return
 
+    # Validate agent CLI is available before running
+    from wiggum.agents import check_cli_available, get_cli_error_message
+
+    if not check_cli_available(agent_name):
+        typer.echo(get_cli_error_message(agent_name), err=True)
+        raise typer.Exit(1)
+
     # Git workflow setup: fetch/merge main and create a new branch
     created_branch = None
     if cfg.git_workflow:
@@ -216,6 +227,11 @@ def run(
 
         if not is_git_repo():
             typer.echo("Error: --git requires a git repository", err=True)
+            raise typer.Exit(1)
+
+        # Validate gh CLI is available for PR creation
+        if not check_cli_available("gh"):
+            typer.echo(get_cli_error_message("gh"), err=True)
             raise typer.Exit(1)
 
         typer.echo("\n--- Git Workflow Setup ---")
@@ -414,14 +430,16 @@ def init(
     existing_tasks_context = get_existing_tasks_context(tasks_path)
     meta_prompt = meta_prompt.replace("{{existing_tasks}}", existing_tasks_context)
 
-    output = run_claude_for_planning(meta_prompt)
+    output, error = run_claude_for_planning(meta_prompt)
 
     use_suggestions = False
     doc_files = "README.md, CLAUDE.md"
     tasks = []
     suggested_constraints = {}
 
-    if output:
+    if error:
+        typer.echo(error, err=True)
+    elif output:
         config = parse_markdown_from_output(output)
         if config:
             suggested_tasks = config.get("tasks", [])
@@ -452,7 +470,7 @@ def init(
         else:
             typer.echo("Could not parse Claude's suggestions.")
     else:
-        typer.echo("Could not run Claude.")
+        typer.echo("Claude returned no output.")
 
     # Manual entry if suggestions not used
     if not use_suggestions:
@@ -596,10 +614,14 @@ def _run_identify_tasks(tasks_file: Path) -> None:
     meta_prompt = meta_prompt.replace("{{existing_tasks}}", existing_tasks_context)
 
     # Run Claude for planning
-    output = run_claude_for_planning(meta_prompt)
+    output, error = run_claude_for_planning(meta_prompt)
+
+    if error:
+        typer.echo(error, err=True)
+        return
 
     if not output:
-        typer.echo("Could not identify tasks (Claude returned no output).")
+        typer.echo("Claude returned no output.")
         return
 
     config = parse_markdown_from_output(output)
@@ -724,10 +746,14 @@ def suggest(
     meta_prompt = meta_prompt.replace("{{existing_tasks}}", existing_tasks_context)
 
     # Run Claude for planning
-    output = run_claude_for_planning(meta_prompt)
+    output, error = run_claude_for_planning(meta_prompt)
+
+    if error:
+        typer.echo(error, err=True)
+        raise typer.Exit(1)
 
     if not output:
-        typer.echo("Could not get suggestions (Claude returned no output).")
+        typer.echo("Claude returned no output.")
         raise typer.Exit(1)
 
     config = parse_markdown_from_output(output)

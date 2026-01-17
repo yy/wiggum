@@ -26,7 +26,7 @@ class TestInitWritesDefaultLoopConfig:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
                 # doc files, task, empty, security (1), git (n)
                 result = runner.invoke(
                     app,
@@ -57,7 +57,7 @@ class TestInitWritesDefaultLoopConfig:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
                 # doc files, task, empty, yolo mode (3), git (y)
                 result = runner.invoke(
                     app,
@@ -88,7 +88,7 @@ class TestInitWritesDefaultLoopConfig:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
                 # doc files, task, empty, security (1), git (n)
                 result = runner.invoke(
                     app,

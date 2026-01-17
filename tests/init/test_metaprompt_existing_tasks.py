@@ -53,10 +53,11 @@ class TestMetapromptIncludesExistingTasks:
             # Track what prompt is sent to Claude
             captured_prompt = None
 
-            def capture_prompt(prompt: str) -> str:
+            def capture_prompt(prompt: str):
                 nonlocal captured_prompt
                 captured_prompt = prompt
-                return """```markdown
+                return (
+                    """```markdown
 ## Goal
 
 Test goal
@@ -64,7 +65,9 @@ Test goal
 ## Tasks
 
 - [ ] New task
-```"""
+```""",
+                    None,
+                )
 
             with patch(
                 "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
@@ -111,10 +114,11 @@ Test goal
 
             captured_prompt = None
 
-            def capture_prompt(prompt: str) -> str:
+            def capture_prompt(prompt: str):
                 nonlocal captured_prompt
                 captured_prompt = prompt
-                return """```markdown
+                return (
+                    """```markdown
 ## Goal
 
 Test goal
@@ -122,7 +126,9 @@ Test goal
 ## Tasks
 
 - [ ] New feature task
-```"""
+```""",
+                    None,
+                )
 
             with patch(
                 "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
@@ -161,10 +167,11 @@ Test goal
 
             captured_prompt = None
 
-            def capture_prompt(prompt: str) -> str:
+            def capture_prompt(prompt: str):
                 nonlocal captured_prompt
                 captured_prompt = prompt
-                return """```markdown
+                return (
+                    """```markdown
 ## Goal
 
 Test goal
@@ -172,7 +179,9 @@ Test goal
 ## Tasks
 
 - [ ] Add tests for auth
-```"""
+```""",
+                    None,
+                )
 
             with patch(
                 "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
@@ -208,10 +217,11 @@ Test goal
 
             captured_prompt = None
 
-            def capture_prompt(prompt: str) -> str:
+            def capture_prompt(prompt: str):
                 nonlocal captured_prompt
                 captured_prompt = prompt
-                return """```markdown
+                return (
+                    """```markdown
 ## Goal
 
 Test goal
@@ -219,7 +229,9 @@ Test goal
 ## Tasks
 
 - [ ] First task
-```"""
+```""",
+                    None,
+                )
 
             with patch(
                 "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
@@ -253,10 +265,11 @@ Test goal
 
             captured_prompt = None
 
-            def capture_prompt(prompt: str) -> str:
+            def capture_prompt(prompt: str):
                 nonlocal captured_prompt
                 captured_prompt = prompt
-                return """```markdown
+                return (
+                    """```markdown
 ## Goal
 
 Test goal
@@ -264,7 +277,9 @@ Test goal
 ## Tasks
 
 - [ ] First task
-```"""
+```""",
+                    None,
+                )
 
             with patch(
                 "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt

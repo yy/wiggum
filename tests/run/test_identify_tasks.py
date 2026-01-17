@@ -38,7 +38,9 @@ Test goal
 - [ ] Add missing test coverage
 - [ ] Clean up unused imports
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
             assert result.exit_code == 0
@@ -67,7 +69,7 @@ Test goal
 - [ ] Some task
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
             ) as mock_planning:
                 # Also patch subprocess.run to track if loop would run
                 with patch("subprocess.run") as mock_run:
@@ -107,7 +109,9 @@ Test goal
 - [ ] Existing task
 - [ ] New refactoring task
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
             assert result.exit_code == 0
@@ -139,7 +143,9 @@ Test goal
 - [ ] Simplify complex function
 - [ ] Add error handling
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
             assert result.exit_code == 0
@@ -148,7 +154,7 @@ Test goal
             assert "Add error handling" in result.output
 
     def test_identify_tasks_handles_empty_response(self, tmp_path: Path) -> None:
-        """--identify-tasks handles case when Claude returns no tasks."""
+        """--identify-tasks handles case when Claude returns no output."""
         with runner.isolated_filesystem(temp_dir=tmp_path):
             Path("templates").mkdir()
             (Path("templates") / "META-PROMPT.md").write_text(
@@ -157,12 +163,12 @@ Test goal
             Path("LOOP-PROMPT.md").write_text("## Goal\n\nTest goal")
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n- [ ] Existing\n")
 
-            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
             assert result.exit_code == 0
-            # Should indicate no tasks found
-            assert "no" in result.output.lower() or "could not" in result.output.lower()
+            # Should indicate no output from Claude
+            assert "no output" in result.output.lower()
             # Existing tasks preserved
             content = Path("TASKS.md").read_text()
             assert "- [ ] Existing" in content
@@ -185,7 +191,9 @@ Test goal
 
 - [ ] Task using bundled template
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
             assert result.exit_code == 0
@@ -211,7 +219,9 @@ Test goal
 
 - [ ] First identified task
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
             assert result.exit_code == 0
@@ -242,7 +252,7 @@ Build CLI automation tool
 - [ ] Improve CLI help messages
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=mock_output
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
             ) as mock_planning:
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -272,7 +282,9 @@ Test goal
 - [ ] Task two
 - [ ] Task three
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
             assert result.exit_code == 0

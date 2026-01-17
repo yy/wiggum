@@ -50,7 +50,9 @@ Test goal
 - [ ] New task from Claude
 - [ ] Another new task
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 # Accept Claude's suggestions, conservative security, git (n)
                 result = runner.invoke(
                     app,
@@ -102,7 +104,9 @@ Test goal
 - [ ] Existing task
 - [ ] Brand new task
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["init"],
@@ -152,7 +156,9 @@ Test goal
 
 - [ ] New task
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["init"],
@@ -186,7 +192,7 @@ Test goal
             # Create existing LOOP-PROMPT.md
             Path("LOOP-PROMPT.md").write_text("Existing loop prompt")
 
-            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
                 result = runner.invoke(
                     app,
                     ["init"],
@@ -226,7 +232,9 @@ Test goal
 
 - [ ] New task only
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["init", "--force"],
@@ -267,7 +275,9 @@ Test goal
 
 - [ ] New task
 ```"""
-            with patch("wiggum.cli.run_claude_for_planning", return_value=mock_output):
+            with patch(
+                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["init"],
@@ -298,7 +308,7 @@ Test goal
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n- [ ] Old task\n")
 
             # Claude returns nothing, so user enters manually
-            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
+            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
                 result = runner.invoke(
                     app,
                     ["init"],

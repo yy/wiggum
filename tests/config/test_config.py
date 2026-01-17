@@ -352,8 +352,11 @@ class TestRunCommandConfig:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch("wiggum.cli.get_agent", return_value=mock_agent) as mock_get_agent:
-            result = runner.invoke(app, ["run", "-n", "1"])
+        with patch("wiggum.agents.check_cli_available", return_value=True):
+            with patch(
+                "wiggum.cli.get_agent", return_value=mock_agent
+            ) as mock_get_agent:
+                result = runner.invoke(app, ["run", "-n", "1"])
 
         assert result.exit_code == 0
         mock_get_agent.assert_called_with("gemini")
@@ -373,8 +376,11 @@ class TestRunCommandConfig:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch("wiggum.cli.get_agent", return_value=mock_agent) as mock_get_agent:
-            result = runner.invoke(app, ["run", "-n", "1", "--agent", "codex"])
+        with patch("wiggum.agents.check_cli_available", return_value=True):
+            with patch(
+                "wiggum.cli.get_agent", return_value=mock_agent
+            ) as mock_get_agent:
+                result = runner.invoke(app, ["run", "-n", "1", "--agent", "codex"])
 
         assert result.exit_code == 0
         mock_get_agent.assert_called_with("codex")
@@ -392,8 +398,11 @@ class TestRunCommandConfig:
 
         mock_agent.run.side_effect = complete_task
 
-        with patch("wiggum.cli.get_agent", return_value=mock_agent) as mock_get_agent:
-            result = runner.invoke(app, ["run", "-n", "1"])
+        with patch("wiggum.agents.check_cli_available", return_value=True):
+            with patch(
+                "wiggum.cli.get_agent", return_value=mock_agent
+            ) as mock_get_agent:
+                result = runner.invoke(app, ["run", "-n", "1"])
 
         assert result.exit_code == 0
         mock_get_agent.assert_called_with(None)

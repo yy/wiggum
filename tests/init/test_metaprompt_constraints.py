@@ -187,7 +187,7 @@ Test project
 security_mode: yolo
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=claude_output
+                "wiggum.cli.run_claude_for_planning", return_value=(claude_output, None)
             ):
                 # Accept suggestions (y), git (n) - yolo mode is auto-applied from constraints
                 result = runner.invoke(app, ["init"], input="y\nn\n")
@@ -228,7 +228,7 @@ security_mode: path_restricted
 allow_paths: src/,tests/
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=claude_output
+                "wiggum.cli.run_claude_for_planning", return_value=(claude_output, None)
             ):
                 # Accept suggestions (y), git (n)
                 result = runner.invoke(app, ["init"], input="y\nn\n")
@@ -269,7 +269,7 @@ Sensitive project
 security_mode: conservative
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=claude_output
+                "wiggum.cli.run_claude_for_planning", return_value=(claude_output, None)
             ):
                 # Accept suggestions (y), git (n)
                 result = runner.invoke(app, ["init"], input="y\nn\n")
@@ -311,7 +311,7 @@ security_mode: yolo
 internet_access: true
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=claude_output
+                "wiggum.cli.run_claude_for_planning", return_value=(claude_output, None)
             ):
                 # Accept suggestions (y), git (n)
                 result = runner.invoke(app, ["init"], input="y\nn\n")
@@ -350,7 +350,7 @@ Simple project
 - [ ] Build it
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=claude_output
+                "wiggum.cli.run_claude_for_planning", return_value=(claude_output, None)
             ):
                 # Accept suggestions for tasks (y), manually choose conservative (1), git (n)
                 result = runner.invoke(app, ["init"], input="y\n1\nn\n")

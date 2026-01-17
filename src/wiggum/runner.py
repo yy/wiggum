@@ -2,21 +2,33 @@
 
 import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
+
+from wiggum.agents import check_cli_available, get_cli_error_message
 
 
-def run_claude_for_planning(meta_prompt: str) -> Optional[str]:
-    """Run Claude with meta prompt and return output."""
-    try:
-        result = subprocess.run(
-            ["claude", "--print", "-p", meta_prompt],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        return result.stdout
-    except FileNotFoundError:
-        return None
+def run_claude_for_planning(meta_prompt: str) -> Tuple[Optional[str], Optional[str]]:
+    """Run Claude with meta prompt and return output.
+
+    Args:
+        meta_prompt: The planning prompt to send to Claude.
+
+    Returns:
+        A tuple of (output, error_message). If successful, output is the stdout
+        and error_message is None. If failed, output is None and error_message
+        contains the reason.
+    """
+    # Validate Claude CLI is available before running
+    if not check_cli_available("claude"):
+        return None, get_cli_error_message("claude")
+
+    result = subprocess.run(
+        ["claude", "--print", "-p", meta_prompt],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stdout, None
 
 
 def get_file_changes() -> tuple[bool, str]:
