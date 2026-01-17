@@ -2,8 +2,6 @@
 
 ## Done
 
-## In Progress
-
 ## Todo
 
 {{tasks}}

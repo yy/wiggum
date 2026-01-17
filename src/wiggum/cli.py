@@ -1,4 +1,4 @@
-"""CLI interface for ralph-loop."""
+"""CLI interface for wiggum."""
 
 from pathlib import Path
 from typing import Optional
@@ -319,17 +319,14 @@ def init(
             raise typer.Exit(1)
         # Note: TASKS.md existence is OK - we'll merge tasks instead of failing
 
-    # Get goal - infer from README if available
-    typer.echo("Setting up ralph-loop...\n")
+    typer.echo("Setting up wiggum...\n")
 
+    # Read README for context if available
     readme_path = Path("README.md")
     readme_content = ""
     if readme_path.exists():
         readme_content = readme_path.read_text()
-        typer.echo("Found README.md - inferring goal from it.")
-        goal = ""  # Will be inferred by Claude
-    else:
-        goal = typer.prompt("What is the goal of this project?")
+        typer.echo("Found README.md - using it for context.")
 
     # Agent-assisted planning (always)
     typer.echo("\nAnalyzing codebase and planning tasks...")
@@ -339,7 +336,9 @@ def init(
             "{{goal}}", f"(Infer from README below)\n\n## README.md\n\n{readme_content}"
         )
     else:
-        meta_prompt = meta_prompt.replace("{{goal}}", goal)
+        meta_prompt = meta_prompt.replace(
+            "{{goal}}", "(No README found - analyze codebase)"
+        )
 
     # Include existing tasks context if TASKS.md exists
     existing_tasks_context = get_existing_tasks_context(tasks_path)
@@ -355,15 +354,9 @@ def init(
     if output:
         config = parse_markdown_from_output(output)
         if config:
-            # Get goal from Claude if we inferred from README
-            if not goal:
-                goal = config.get("goal", "")
             suggested_tasks = config.get("tasks", [])
             suggested_constraints = config.get("constraints", {})
 
-            typer.echo("\nSuggested configuration:")
-            typer.echo(f"  Goal: {goal}")
-            typer.echo(f"  Doc files: {doc_files}")
             typer.echo("\nSuggested tasks:")
             for task_desc in suggested_tasks:
                 typer.echo(f"  - {task_desc}")
@@ -394,8 +387,6 @@ def init(
     # Manual entry if suggestions not used
     if not use_suggestions:
         typer.echo("\nManual configuration:")
-        if not goal:
-            goal = typer.prompt("What is the goal of this project?")
         doc_files = typer.prompt(
             "Which doc files should be updated?", default=doc_files
         )
@@ -486,12 +477,7 @@ def init(
 
     # Generate files from templates
     prompt_template = prompt_template_path.read_text()
-    tasks_str = "\n".join(tasks) if tasks else "- [ ] (add your first task here)"
-    prompt_content = (
-        prompt_template.replace("{{goal}}", goal)
-        .replace("{{doc_files}}", doc_files)
-        .replace("{{tasks}}", tasks_str)
-    )
+    prompt_content = prompt_template.replace("{{doc_files}}", doc_files)
 
     # Handle TASKS.md: merge if exists (unless --force), otherwise create new
     if tasks_file_exists and not force:
@@ -524,7 +510,7 @@ def init(
 
     prompt_path.write_text(prompt_content)
     typer.echo(f"Created {prompt_path} and {CONFIG_FILE}")
-    typer.echo("\nRun the loop with: ralph-loop run")
+    typer.echo("\nRun the loop with: wiggum run")
 
 
 def _run_identify_tasks(tasks_file: Path) -> None:
