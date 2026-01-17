@@ -5,7 +5,8 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from wiggum.cli import app, read_config
+from wiggum.cli import app
+from wiggum.config import read_config
 
 runner = CliRunner()
 

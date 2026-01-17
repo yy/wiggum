@@ -1,4 +1,4 @@
-"""Tests for the ralph-loop add command."""
+"""Tests for the wiggum add command."""
 
 from pathlib import Path
 
@@ -10,7 +10,7 @@ runner = CliRunner()
 
 
 class TestAddCommand:
-    """Tests for the `ralph-loop add` command."""
+    """Tests for the `wiggum add` command."""
 
     def test_add_task_to_existing_file(self, tmp_path: Path) -> None:
         """Adds a task to an existing TASKS.md file."""

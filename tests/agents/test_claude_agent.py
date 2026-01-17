@@ -1,41 +1,14 @@
-"""Tests for the Claude agent implementation.
+"""Tests for Claude-specific command building.
 
-These tests verify the ClaudeAgent:
-1. Implements the Agent protocol correctly
-2. Builds the correct CLI commands based on configuration
-3. Handles errors appropriately (e.g., missing claude command)
+These tests verify the ClaudeAgent builds the correct CLI commands
+based on configuration. Common agent behavior (protocol compliance,
+result handling, error handling) is tested in test_agents.py.
 """
 
 from unittest.mock import MagicMock, patch
 
-
-from wiggum.agents import Agent, AgentConfig, AgentResult, get_agent
+from wiggum.agents import AgentConfig
 from wiggum.agents_claude import ClaudeAgent
-
-
-class TestClaudeAgentImplementation:
-    """Tests that ClaudeAgent correctly implements the Agent protocol."""
-
-    def test_claude_agent_implements_agent_protocol(self):
-        """ClaudeAgent should implement the Agent protocol."""
-        agent = ClaudeAgent()
-        assert isinstance(agent, Agent)
-
-    def test_claude_agent_name_is_claude(self):
-        """ClaudeAgent should have name 'claude'."""
-        agent = ClaudeAgent()
-        assert agent.name == "claude"
-
-    def test_claude_agent_is_registered(self):
-        """ClaudeAgent should be registered in the agent registry."""
-        agent = get_agent("claude")
-        assert agent.name == "claude"
-        assert isinstance(agent, ClaudeAgent)
-
-    def test_claude_agent_is_default(self):
-        """ClaudeAgent should be the default agent."""
-        agent = get_agent()
-        assert agent.name == "claude"
 
 
 class TestClaudeAgentCommandBuilding:
@@ -130,83 +103,3 @@ class TestClaudeAgentCommandBuilding:
 
         cmd = mock_run.call_args[0][0]
         assert "--allowedTools" not in cmd
-
-
-class TestClaudeAgentResult:
-    """Tests that ClaudeAgent returns correct results."""
-
-    @patch("wiggum.agents_claude.subprocess.run")
-    def test_returns_agent_result(self, mock_run: MagicMock):
-        """run() should return an AgentResult."""
-        mock_run.return_value = MagicMock(stdout="output", stderr="err", returncode=0)
-
-        agent = ClaudeAgent()
-        result = agent.run(AgentConfig(prompt="test"))
-
-        assert isinstance(result, AgentResult)
-
-    @patch("wiggum.agents_claude.subprocess.run")
-    def test_captures_stdout(self, mock_run: MagicMock):
-        """Result should contain stdout from subprocess."""
-        mock_run.return_value = MagicMock(stdout="hello world", stderr="", returncode=0)
-
-        agent = ClaudeAgent()
-        result = agent.run(AgentConfig(prompt="test"))
-
-        assert result.stdout == "hello world"
-
-    @patch("wiggum.agents_claude.subprocess.run")
-    def test_captures_stderr(self, mock_run: MagicMock):
-        """Result should contain stderr from subprocess."""
-        mock_run.return_value = MagicMock(stdout="", stderr="error msg", returncode=1)
-
-        agent = ClaudeAgent()
-        result = agent.run(AgentConfig(prompt="test"))
-
-        assert result.stderr == "error msg"
-
-    @patch("wiggum.agents_claude.subprocess.run")
-    def test_captures_return_code(self, mock_run: MagicMock):
-        """Result should contain return code from subprocess."""
-        mock_run.return_value = MagicMock(stdout="", stderr="", returncode=42)
-
-        agent = ClaudeAgent()
-        result = agent.run(AgentConfig(prompt="test"))
-
-        assert result.return_code == 42
-
-    @patch("wiggum.agents_claude.subprocess.run")
-    def test_handles_none_stdout(self, mock_run: MagicMock):
-        """Result should handle None stdout gracefully."""
-        mock_run.return_value = MagicMock(stdout=None, stderr="", returncode=0)
-
-        agent = ClaudeAgent()
-        result = agent.run(AgentConfig(prompt="test"))
-
-        assert result.stdout == ""
-
-    @patch("wiggum.agents_claude.subprocess.run")
-    def test_handles_none_stderr(self, mock_run: MagicMock):
-        """Result should handle None stderr gracefully."""
-        mock_run.return_value = MagicMock(stdout="", stderr=None, returncode=0)
-
-        agent = ClaudeAgent()
-        result = agent.run(AgentConfig(prompt="test"))
-
-        assert result.stderr == ""
-
-
-class TestClaudeAgentErrorHandling:
-    """Tests that ClaudeAgent handles errors appropriately."""
-
-    @patch("wiggum.agents_claude.subprocess.run")
-    def test_handles_missing_claude_command(self, mock_run: MagicMock):
-        """Should return error result when claude command is not found."""
-        mock_run.side_effect = FileNotFoundError("No such file or directory: 'claude'")
-
-        agent = ClaudeAgent()
-        result = agent.run(AgentConfig(prompt="test"))
-
-        assert result.return_code == 1
-        assert "not found" in result.stderr.lower()
-        assert result.stdout == ""

@@ -297,7 +297,7 @@ class TestConfigFileWritesKeepRunning:
 
     def test_write_config_includes_keep_running(self, tmp_path: Path) -> None:
         """write_config correctly writes keep_running to [loop] section."""
-        from wiggum.cli import write_config, read_config
+        from wiggum.config import write_config, read_config
 
         import os
 

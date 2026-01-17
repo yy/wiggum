@@ -1,4 +1,4 @@
-"""Tests for stop conditions in ralph-loop.
+"""Tests for stop conditions in wiggum.
 
 The only stop condition is TASKS.md checkmarks (besides max iterations).
 """

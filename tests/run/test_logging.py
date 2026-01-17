@@ -1,4 +1,4 @@
-"""Tests for logging functionality in ralph-loop."""
+"""Tests for logging functionality in wiggum."""
 
 import re
 from pathlib import Path

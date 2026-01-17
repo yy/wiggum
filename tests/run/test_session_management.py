@@ -1,4 +1,4 @@
-"""Tests for session management (--continue vs --reset) in ralph-loop."""
+"""Tests for session management (--continue vs --reset) in wiggum."""
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch

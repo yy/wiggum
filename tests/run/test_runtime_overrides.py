@@ -1,4 +1,4 @@
-"""Tests for runtime override flags in ralph-loop run command."""
+"""Tests for runtime override flags in wiggum run command."""
 
 from pathlib import Path
 from unittest.mock import patch

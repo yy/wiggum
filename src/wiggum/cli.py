@@ -8,8 +8,8 @@ import typer
 from wiggum.agents import AgentConfig, get_agent, get_available_agents
 from wiggum.config import (
     CONFIG_FILE,
-    get_templates_dir,
-    read_config,
+    resolve_run_config,
+    resolve_templates_dir,
     write_config,
 )
 from wiggum.parsing import parse_markdown_from_output
@@ -26,7 +26,7 @@ from wiggum.tasks import (
     tasks_remaining,
 )
 
-app = typer.Typer(help="Ralph Wiggum loop for agents")
+app = typer.Typer(help="Run iterative agent loops with task tracking")
 
 
 @app.command()
@@ -95,86 +95,49 @@ def run(
     ),
 ) -> None:
     """Run the agent loop. Stops when all tasks in TASKS.md are complete."""
-    # Read config file and apply settings (CLI flags override config)
-    config = read_config()
-    security_config = config.get("security", {})
-    loop_config = config.get("loop", {})
-
-    # Apply security config values if CLI flags not explicitly set
-    if not yolo and security_config.get("yolo", False):
-        yolo = True
-    if allow_paths is None and security_config.get("allow_paths"):
-        allow_paths = security_config.get("allow_paths")
-
-    # Apply loop config values with defaults
-    if max_iterations is None:
-        max_iterations = loop_config.get("max_iterations", 10)
-    if tasks_file is None:
-        tasks_file = Path(loop_config.get("tasks_file", "TASKS.md"))
-    if prompt_file is None:
-        config_prompt_file = loop_config.get("prompt_file")
-        if config_prompt_file:
-            prompt_file = Path(config_prompt_file)
-    if agent is None:
-        agent = loop_config.get("agent")  # None means use default (claude)
-
-    # Apply output config values if CLI flags not explicitly set
-    output_config = config.get("output", {})
-    if log_file is None and output_config.get("log_file"):
-        log_file = Path(output_config.get("log_file"))
-    if not show_progress and output_config.get("verbose", False):
-        show_progress = True
-
-    # Apply session config values if CLI flags not explicitly set
-    session_config = config.get("session", {})
-    if not continue_session and not reset_session:
-        # Neither flag set - use config if available
-        if session_config.get("continue_session", False):
-            continue_session = True
-
-    # Check for mutually exclusive flags
-    if continue_session and reset_session:
-        typer.echo(
-            "Error: --continue and --reset are mutually exclusive. Cannot use both.",
-            err=True,
+    # Resolve configuration (CLI flags override config file)
+    try:
+        cfg = resolve_run_config(
+            yolo=yolo,
+            allow_paths=allow_paths,
+            max_iterations=max_iterations,
+            tasks_file=tasks_file,
+            prompt_file=prompt_file,
+            agent=agent,
+            log_file=log_file,
+            show_progress=show_progress,
+            continue_session=continue_session,
+            reset_session=reset_session,
+            keep_running=keep_running,
+            stop_when_done=stop_when_done,
         )
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
-
-    if keep_running and stop_when_done:
-        typer.echo(
-            "Error: --keep-running and --stop-when-done are mutually exclusive. Cannot use both.",
-            err=True,
-        )
-        raise typer.Exit(1)
-
-    # Apply loop config for keep_running if CLI flags not explicitly set
-    if not keep_running and not stop_when_done:
-        # Neither flag set - use config if available
-        if loop_config.get("keep_running", False):
-            keep_running = True
 
     # Handle --identify-tasks: analyze codebase and populate TASKS.md
     if identify_tasks:
-        _run_identify_tasks(tasks_file)
+        _run_identify_tasks(cfg.tasks_file)
         return
 
     # Determine prompt source - always from file
-    if prompt_file is None:
-        prompt_file = Path("LOOP-PROMPT.md")
-    if not prompt_file.exists():
-        typer.echo(f"Error: Prompt file '{prompt_file}' not found", err=True)
+    resolved_prompt_file = cfg.prompt_file
+    if resolved_prompt_file is None:
+        resolved_prompt_file = Path("LOOP-PROMPT.md")
+    if not resolved_prompt_file.exists():
+        typer.echo(f"Error: Prompt file '{resolved_prompt_file}' not found", err=True)
         raise typer.Exit(1)
-    prompt = prompt_file.read_text()
+    prompt = resolved_prompt_file.read_text()
 
     # Determine agent name for display (None means default which is "claude")
-    agent_name = agent if agent else "claude"
+    agent_name = cfg.agent if cfg.agent else "claude"
 
     # Validate agent name if specified
-    if agent is not None:
+    if cfg.agent is not None:
         available = get_available_agents()
-        if agent not in available:
+        if cfg.agent not in available:
             typer.echo(
-                f"Error: Unknown agent '{agent}'. "
+                f"Error: Unknown agent '{cfg.agent}'. "
                 f"Available agents: {', '.join(available)}",
                 err=True,
             )
@@ -182,17 +145,17 @@ def run(
 
     if dry_run:
         cmd = ["claude", "--print", "-p", "<prompt>"]
-        if yolo:
+        if cfg.yolo:
             cmd.append("--dangerously-skip-permissions")
-        if allow_paths:
-            for path in allow_paths.split(","):
+        if cfg.allow_paths:
+            for path in cfg.allow_paths.split(","):
                 cmd.extend(["--allowedTools", f"Edit:{path.strip()}*"])
                 cmd.extend(["--allowedTools", f"Write:{path.strip()}*"])
-        typer.echo(f"Would run {max_iterations} iterations")
+        typer.echo(f"Would run {cfg.max_iterations} iterations")
         typer.echo(f"Agent: {agent_name}")
         typer.echo(f"Command: {' '.join(cmd)}")
-        typer.echo(f"Stop condition: tasks (check {tasks_file})")
-        if keep_running:
+        typer.echo(f"Stop condition: tasks (check {cfg.tasks_file})")
+        if cfg.keep_running:
             typer.echo(
                 "Task completion mode: keep running (continue for all iterations)"
             )
@@ -200,15 +163,15 @@ def run(
             typer.echo(
                 "Task completion mode: stop when done (exit when tasks complete)"
             )
-        if continue_session:
+        if cfg.continue_session:
             typer.echo(
                 "Session mode: continue (will pass -c to claude after first iteration)"
             )
         else:
             typer.echo("Session mode: reset (fresh session each iteration)")
-        if log_file:
-            typer.echo(f"Log file: {log_file}")
-        if show_progress:
+        if cfg.log_file:
+            typer.echo(f"Log file: {cfg.log_file}")
+        if cfg.show_progress:
             typer.echo(
                 "Progress tracking: enabled (will show file changes via git status)"
             )
@@ -217,11 +180,11 @@ def run(
 
     def check_stop_conditions() -> Optional[str]:
         """Check stop conditions and return exit message if should stop."""
-        if not keep_running and not tasks_remaining(tasks_file):
-            return f"All tasks in {tasks_file} are complete. Exiting."
+        if not cfg.keep_running and not tasks_remaining(cfg.tasks_file):
+            return f"All tasks in {cfg.tasks_file} are complete. Exiting."
         return None
 
-    for i in range(1, max_iterations + 1):
+    for i in range(1, cfg.max_iterations + 1):
         # Check stop conditions before running
         exit_message = check_stop_conditions()
         if exit_message:
@@ -229,20 +192,20 @@ def run(
             break
 
         typer.echo(f"\n{'=' * 60}")
-        typer.echo(f"Iteration {i}/{max_iterations}")
-        current_task = get_current_task(tasks_file)
+        typer.echo(f"Iteration {i}/{cfg.max_iterations}")
+        current_task = get_current_task(cfg.tasks_file)
         if current_task:
             typer.echo(f"Current task: {current_task}")
         typer.echo(f"{'=' * 60}\n")
 
         # Run the agent
-        agent_instance = get_agent(agent)
+        agent_instance = get_agent(cfg.agent)
         agent_config = AgentConfig(
             prompt=prompt,
-            yolo=yolo,
-            allow_paths=allow_paths,
+            yolo=cfg.yolo,
+            allow_paths=cfg.allow_paths,
             # After first iteration, continue session if requested
-            continue_session=continue_session and i > 1,
+            continue_session=cfg.continue_session and i > 1,
         )
         result = agent_instance.run(agent_config)
         # Print output to console
@@ -254,10 +217,10 @@ def run(
         if result.return_code != 0 and "not found" in result.stderr.lower():
             raise typer.Exit(1)
         # Log output to file if requested
-        if log_file:
-            write_log_entry(log_file, i, result.stdout or "")
+        if cfg.log_file:
+            write_log_entry(cfg.log_file, i, result.stdout or "")
         # Show file changes if requested
-        if show_progress:
+        if cfg.show_progress:
             success, changes = get_file_changes()
             typer.echo("\n--- File Changes ---")
             typer.echo(changes)
@@ -284,13 +247,7 @@ def init(
     ),
 ) -> None:
     """Initialize a loop with LOOP-PROMPT.md and TASKS.md using agent-assisted planning."""
-    # Find templates
-    if templates_dir is None:
-        if Path("templates").is_dir():
-            templates_dir = Path("templates")
-        else:
-            templates_dir = get_templates_dir()
-
+    templates_dir = resolve_templates_dir(templates_dir)
     prompt_template_path = templates_dir / "LOOP-PROMPT.md"
     tasks_template_path = templates_dir / "TASKS.md"
     meta_prompt_path = templates_dir / "META-PROMPT.md"
@@ -519,12 +476,7 @@ def _run_identify_tasks(tasks_file: Path) -> None:
     Args:
         tasks_file: Path to the tasks file to populate.
     """
-    # Find meta-prompt template
-    if Path("templates").is_dir():
-        templates_dir = Path("templates")
-    else:
-        templates_dir = get_templates_dir()
-
+    templates_dir = resolve_templates_dir()
     meta_prompt_path = templates_dir / "META-PROMPT.md"
 
     if not meta_prompt_path.exists():

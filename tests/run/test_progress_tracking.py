@@ -1,4 +1,4 @@
-"""Tests for progress tracking (file changes) in ralph-loop."""
+"""Tests for progress tracking (file changes) in wiggum."""
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch

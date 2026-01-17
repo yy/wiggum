@@ -1,1 +1,1 @@
-# Tests for ralph-loop
+# Tests for wiggum

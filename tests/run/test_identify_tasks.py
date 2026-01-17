@@ -1,4 +1,4 @@
-"""Tests for the ralph-loop run --identify-tasks option."""
+"""Tests for the wiggum run --identify-tasks option."""
 
 from pathlib import Path
 from unittest.mock import patch
@@ -11,7 +11,7 @@ runner = CliRunner()
 
 
 class TestIdentifyTasks:
-    """Tests for the `ralph-loop run --identify-tasks` option."""
+    """Tests for the `wiggum run --identify-tasks` option."""
 
     def test_identify_tasks_populates_tasks_file(self, tmp_path: Path) -> None:
         """--identify-tasks analyzes codebase and populates TASKS.md."""
