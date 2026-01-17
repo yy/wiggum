@@ -95,33 +95,8 @@ class TestInitSecurityQuestions:
             assert "src/" in content
             assert "tests/" in content
 
-    def test_init_yolo_mode_sets_dangerous_flag(self, tmp_path: Path) -> None:
+    def test_init_yolo_mode_sets_flag(self, tmp_path: Path) -> None:
         """YOLO mode (option 3) sets yolo = true in config."""
-        with runner.isolated_filesystem(temp_dir=tmp_path):
-            Path("templates").mkdir()
-            (Path("templates") / "LOOP-PROMPT.md").write_text(
-                "## Goal\n\n{{goal}}\n\n## Workflow\n"
-            )
-            (Path("templates") / "TASKS.md").write_text(
-                "# Tasks\n\n## Todo\n\n{{tasks}}\n"
-            )
-            (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
-
-            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
-                # Choose YOLO mode (option 3), confirm the warning
-                result = runner.invoke(
-                    app,
-                    ["init"],
-                    input="Test project\nREADME.md\nTask 1\n\n3\ny\n",
-                )
-
-            config_file = Path(".wiggum.toml")
-            assert config_file.exists(), f"Config not created. Output: {result.output}"
-            content = config_file.read_text()
-            assert "yolo = true" in content
-
-    def test_init_yolo_mode_shows_warning(self, tmp_path: Path) -> None:
-        """YOLO mode shows a warning about security implications."""
         with runner.isolated_filesystem(temp_dir=tmp_path):
             Path("templates").mkdir()
             (Path("templates") / "LOOP-PROMPT.md").write_text(
@@ -137,40 +112,13 @@ class TestInitSecurityQuestions:
                 result = runner.invoke(
                     app,
                     ["init"],
-                    input="Test project\nREADME.md\nTask 1\n\n3\ny\n",
-                )
-
-            # Check for warning in output
-            assert (
-                "warning" in result.output.lower()
-                or "dangerous" in result.output.lower()
-            )
-
-    def test_init_yolo_mode_can_be_cancelled(self, tmp_path: Path) -> None:
-        """User can cancel YOLO mode after seeing the warning."""
-        with runner.isolated_filesystem(temp_dir=tmp_path):
-            Path("templates").mkdir()
-            (Path("templates") / "LOOP-PROMPT.md").write_text(
-                "## Goal\n\n{{goal}}\n\n## Workflow\n"
-            )
-            (Path("templates") / "TASKS.md").write_text(
-                "# Tasks\n\n## Todo\n\n{{tasks}}\n"
-            )
-            (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
-
-            with patch("wiggum.cli.run_claude_for_planning", return_value=None):
-                # Choose YOLO mode (option 3) but decline at warning, then choose conservative
-                result = runner.invoke(
-                    app,
-                    ["init"],
-                    input="Test project\nREADME.md\nTask 1\n\n3\nn\n1\n",
+                    input="Test project\nREADME.md\nTask 1\n\n3\n",
                 )
 
             config_file = Path(".wiggum.toml")
-            assert config_file.exists()
+            assert config_file.exists(), f"Config not created. Output: {result.output}"
             content = config_file.read_text()
-            # Should NOT have yolo = true since user cancelled
-            assert "yolo = true" not in content
+            assert "yolo = true" in content
 
 
 class TestRunReadsConfigFile:

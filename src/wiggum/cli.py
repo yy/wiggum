@@ -365,59 +365,26 @@ def init(
         security_mode = suggested_constraints.get("security_mode", "conservative")
 
         if security_mode == "yolo":
-            typer.echo(
-                "\nWARNING: YOLO mode skips ALL permission prompts. "
-                "Claude will be able to modify any file without asking."
-            )
-            typer.echo(
-                "This is dangerous and should only be used for trusted projects."
-            )
-            if typer.confirm(
-                "Are you sure you want to enable YOLO mode?", default=False
-            ):
-                security_yolo = True
-            else:
-                # User cancelled suggested yolo, fall back to manual
-                suggested_constraints = {}
+            security_yolo = True
         elif security_mode == "path_restricted":
             security_allow_paths = suggested_constraints.get("allow_paths", "")
         # else: conservative mode - no special permissions needed
 
-    # Manual security selection if no constraints or user cancelled
+    # Manual security selection if no constraints
     if not use_suggestions or not suggested_constraints:
         typer.echo("\nSecurity configuration:")
-        typer.echo("  1) Conservative - Claude will ask permission for each action")
-        typer.echo("  2) Path-restricted - Allow writes to specific paths only")
-        typer.echo("  3) YOLO mode - Skip all permission prompts (dangerous!)")
+        typer.echo("  1) Conservative - ask permission for each action")
+        typer.echo("  2) Path-restricted - allow writes to specific paths only")
+        typer.echo("  3) YOLO - skip all permission prompts")
 
-        security_choice = typer.prompt("Choose security mode [1/2/3]", default="1")
+        security_choice = typer.prompt("Choose security mode [1/2/3]", default="3")
 
         if security_choice == "2":
             security_allow_paths = typer.prompt(
                 "Enter paths to allow (comma-separated, e.g., 'src/,tests/')"
             )
         elif security_choice == "3":
-            typer.echo(
-                "\nWARNING: YOLO mode skips ALL permission prompts. "
-                "Claude will be able to modify any file without asking."
-            )
-            typer.echo(
-                "This is dangerous and should only be used for trusted projects."
-            )
-            if typer.confirm(
-                "Are you sure you want to enable YOLO mode?", default=False
-            ):
-                security_yolo = True
-            else:
-                # User cancelled, ask again
-                typer.echo("\nYOLO mode cancelled. Choosing a different mode:")
-                security_choice = typer.prompt(
-                    "Choose security mode [1/2]", default="1"
-                )
-                if security_choice == "2":
-                    security_allow_paths = typer.prompt(
-                        "Enter paths to allow (comma-separated, e.g., 'src/,tests/')"
-                    )
+            security_yolo = True
 
     # Write config with security and default loop settings
     write_config(

@@ -48,23 +48,16 @@ class Agent(Protocol):
         ...
 
 
-# Registry of available agents
-_agents: dict[str, type] = {}
+from wiggum.agents_claude import ClaudeAgent
+from wiggum.agents_codex import CodexAgent
+from wiggum.agents_gemini import GeminiAgent
 
-
-def register_agent(agent_class: type) -> type:
-    """Decorator to register an agent class.
-
-    Args:
-        agent_class: The agent class to register.
-
-    Returns:
-        The agent class unchanged.
-    """
-    # Instantiate to get the name
-    instance = agent_class()
-    _agents[instance.name] = agent_class
-    return agent_class
+# Registry mapping agent names to their classes
+_agents: dict[str, type] = {
+    "claude": ClaudeAgent,
+    "codex": CodexAgent,
+    "gemini": GeminiAgent,
+}
 
 
 def get_agent(name: Optional[str] = None) -> Agent:
@@ -96,10 +89,3 @@ def get_available_agents() -> list[str]:
         List of registered agent names.
     """
     return list(_agents.keys())
-
-
-# Import agents module to trigger registration
-# This will be populated as we implement specific agents
-from wiggum.agents_claude import ClaudeAgent  # noqa: E402, F401
-from wiggum.agents_codex import CodexAgent  # noqa: E402, F401
-from wiggum.agents_gemini import GeminiAgent  # noqa: E402, F401

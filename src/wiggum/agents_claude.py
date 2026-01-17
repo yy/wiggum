@@ -2,10 +2,9 @@
 
 import subprocess
 
-from wiggum.agents import AgentConfig, AgentResult, register_agent
+from wiggum.agents import AgentConfig, AgentResult
 
 
-@register_agent
 class ClaudeAgent:
     """Agent implementation for Claude Code CLI."""
 

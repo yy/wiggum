@@ -2,10 +2,9 @@
 
 import subprocess
 
-from wiggum.agents import AgentConfig, AgentResult, register_agent
+from wiggum.agents import AgentConfig, AgentResult
 
 
-@register_agent
 class CodexAgent:
     """Agent implementation for OpenAI Codex CLI."""
 
