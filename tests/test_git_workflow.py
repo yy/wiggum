@@ -113,7 +113,8 @@ class TestGitSafetyNonGitRepo:
             Path("LOOP-PROMPT.md").write_text("Test prompt")
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n- [ ] Test task\n")
             # Answer 'n' to the confirmation prompt
-            result = runner.invoke(app, ["run", "-n", "1"], input="n\n")
+            with patch("wiggum.agents.check_cli_available", return_value=True):
+                result = runner.invoke(app, ["run", "-n", "1"], input="n\n")
 
         assert result.exit_code == 0
         assert "Not a git repository" in result.output
