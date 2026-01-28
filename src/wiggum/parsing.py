@@ -49,9 +49,6 @@ def parse_markdown_from_output(output: str) -> Optional[dict]:
         if task_match:
             tasks.append(task_match.group(1).strip())
 
-    if not tasks:
-        return None
-
     # Extract constraints from ## Constraints section (optional)
     constraints = {}
     constraints_match = re.search(

@@ -70,7 +70,7 @@ Test goal
                 )
 
             with patch(
-                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.runner.run_claude_for_planning", side_effect=capture_prompt
             ):
                 result = runner.invoke(
                     app,
@@ -131,7 +131,7 @@ Test goal
                 )
 
             with patch(
-                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.runner.run_claude_for_planning", side_effect=capture_prompt
             ):
                 runner.invoke(app, ["init"], input="y\n1\n")
 
@@ -184,7 +184,7 @@ Test goal
                 )
 
             with patch(
-                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.runner.run_claude_for_planning", side_effect=capture_prompt
             ):
                 runner.invoke(app, ["init"], input="y\n1\n")
 
@@ -234,7 +234,7 @@ Test goal
                 )
 
             with patch(
-                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.runner.run_claude_for_planning", side_effect=capture_prompt
             ):
                 runner.invoke(app, ["init"], input="y\n1\n")
 
@@ -282,7 +282,7 @@ Test goal
                 )
 
             with patch(
-                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.runner.run_claude_for_planning", side_effect=capture_prompt
             ):
                 runner.invoke(app, ["init"], input="y\n1\n")
 

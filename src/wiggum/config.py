@@ -1,10 +1,137 @@
 """Configuration handling for wiggum."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
 CONFIG_FILE = ".wiggum.toml"
+
+# Config schema with type information
+# Format: {section: {key: (default_value, expected_type)}}
+CONFIG_SCHEMA: dict[str, dict[str, tuple]] = {
+    "security": {
+        "yolo": (False, bool),
+        "allow_paths": ("", str),
+    },
+    "loop": {
+        "max_iterations": (10, int),
+        "agent": ("claude", str),
+        "keep_running": (False, bool),
+        "tasks_file": ("TASKS.md", str),
+        "prompt_file": ("LOOP-PROMPT.md", str),
+    },
+    "git": {
+        "enabled": (False, bool),
+        "branch_prefix": ("wiggum", str),
+        "auto_pr": (False, bool),
+    },
+    "output": {
+        "verbose": (False, bool),
+        "log_file": ("", str),
+    },
+    "session": {
+        "continue_session": (False, bool),
+    },
+}
+
+
+@dataclass
+class ConfigValidationResult:
+    """Result of config validation."""
+
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+    @property
+    def is_valid(self) -> bool:
+        """Returns True if there are no errors."""
+        return len(self.errors) == 0
+
+
+def _find_similar_key(key: str, valid_keys: list[str]) -> Optional[str]:
+    """Find a similar key from valid_keys (simple typo detection).
+
+    Uses basic edit distance heuristic: if keys share a prefix/suffix
+    or differ by just a character, they're likely typos.
+    """
+    for valid_key in valid_keys:
+        # Exact match minus one char (e.g., max_iteration vs max_iterations)
+        if (
+            key in valid_key
+            or valid_key in key
+            or (len(key) > 3 and len(valid_key) > 3 and key[:4] == valid_key[:4])
+        ):
+            return valid_key
+    return None
+
+
+def validate_config(config: dict) -> ConfigValidationResult:
+    """Validate configuration against the schema.
+
+    Checks for:
+    - Unknown sections (warning)
+    - Unknown keys in known sections (warning with suggestions)
+    - Wrong types for known keys (error)
+    - Invalid agent names (error)
+
+    Args:
+        config: Configuration dict to validate.
+
+    Returns:
+        ConfigValidationResult with errors and warnings.
+    """
+    result = ConfigValidationResult()
+
+    # Import here to avoid circular dependency
+    from wiggum.agents import get_available_agents
+
+    known_sections = set(CONFIG_SCHEMA.keys())
+
+    for section, options in config.items():
+        # Check for unknown sections
+        if section not in known_sections:
+            result.warnings.append(f"Unknown config section: [{section}]")
+            continue
+
+        if not isinstance(options, dict):
+            result.errors.append(
+                f"Section [{section}] should be a table, got {type(options).__name__}"
+            )
+            continue
+
+        known_keys = set(CONFIG_SCHEMA[section].keys())
+
+        for key, value in options.items():
+            # Check for unknown keys in known sections
+            if key not in known_keys:
+                similar = _find_similar_key(key, list(known_keys))
+                if similar:
+                    result.warnings.append(
+                        f"Unknown key '{key}' in [{section}]. Did you mean '{similar}'?"
+                    )
+                else:
+                    result.warnings.append(f"Unknown key '{key}' in [{section}]")
+                continue
+
+            # Type validation
+            _default, expected_type = CONFIG_SCHEMA[section][key]
+            if not isinstance(value, expected_type):
+                result.errors.append(
+                    f"Config [{section}].{key} should be {expected_type.__name__}, "
+                    f"got {type(value).__name__} ({value!r})"
+                )
+                continue
+
+            # Special validation for agent name
+            if section == "loop" and key == "agent":
+                available = get_available_agents()
+                if value not in available:
+                    result.errors.append(
+                        f"Invalid agent '{value}' in config. "
+                        f"Available agents: {', '.join(available)}"
+                    )
+
+    return result
 
 
 @dataclass

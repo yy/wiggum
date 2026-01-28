@@ -1,6 +1,6 @@
 """Tests for parsing markdown output from Claude during init."""
 
-from wiggum.cli import parse_markdown_from_output
+from wiggum.parsing import parse_markdown_from_output
 
 
 class TestParseMarkdownFromOutput:

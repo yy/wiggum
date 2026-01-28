@@ -39,7 +39,8 @@ Test goal
 - [ ] Clean up unused imports
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -69,7 +70,8 @@ Test goal
 - [ ] Some task
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ) as mock_planning:
                 # Also patch subprocess.run to track if loop would run
                 with patch("subprocess.run") as mock_run:
@@ -110,7 +112,8 @@ Test goal
 - [ ] New refactoring task
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -144,7 +147,8 @@ Test goal
 - [ ] Add error handling
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -163,7 +167,9 @@ Test goal
             Path("LOOP-PROMPT.md").write_text("## Goal\n\nTest goal")
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n- [ ] Existing\n")
 
-            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
+            with patch(
+                "wiggum.runner.run_claude_for_planning", return_value=(None, None)
+            ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
             assert result.exit_code == 0
@@ -192,7 +198,8 @@ Test goal
 - [ ] Task using bundled template
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -220,7 +227,8 @@ Test goal
 - [ ] First identified task
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -252,7 +260,8 @@ Build CLI automation tool
 - [ ] Improve CLI help messages
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ) as mock_planning:
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 
@@ -283,7 +292,8 @@ Test goal
 - [ ] Task three
 ```"""
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(app, ["run", "--identify-tasks"])
 

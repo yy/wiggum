@@ -1,10 +1,17 @@
 """CLI interface for wiggum."""
 
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 import typer
+
+
+def _timestamp() -> str:
+    """Return current time formatted as [HH:MM:SS]."""
+    return datetime.now().strftime("[%H:%M:%S]")
+
 
 from wiggum.agents import (
     AgentConfig,
@@ -13,14 +20,15 @@ from wiggum.agents import (
 )
 from wiggum.config import (
     CONFIG_FILE,
+    read_config,
     resolve_run_config,
     resolve_templates_dir,
+    validate_config,
     write_config,
 )
-from wiggum.parsing import parse_markdown_from_output
 from wiggum.runner import (
     get_file_changes,
-    run_claude_for_planning,
+    run_claude_with_retry,
     write_log_entry,
 )
 from wiggum.tasks import (
@@ -121,6 +129,19 @@ def run(
     ),
 ) -> None:
     """Run the agent loop. Stops when all tasks in TASKS.md are complete."""
+    # Validate config file before resolving
+    config = read_config()
+    if config:
+        validation = validate_config(config)
+        # Show warnings
+        for warning in validation.warnings:
+            typer.echo(f"Warning: {warning}", err=True)
+        # Show errors and exit
+        if not validation.is_valid:
+            for error in validation.errors:
+                typer.echo(f"Error: {error}", err=True)
+            raise typer.Exit(1)
+
     # Resolve configuration (CLI flags override config file)
     try:
         cfg = resolve_run_config(
@@ -330,9 +351,21 @@ def run(
             continue_session=cfg.continue_session and i > 1,
         )
 
+        # Debug output before agent starts
+        if cfg.show_progress:
+            typer.echo(f"{_timestamp()} Running {agent_name} agent...")
+
         start_time = time.time()
         result = agent_instance.run(agent_config)
         elapsed = time.time() - start_time
+
+        # Debug output after agent completes
+        if cfg.show_progress:
+            if elapsed >= 60:
+                elapsed_str = f"{int(elapsed // 60)}m {int(elapsed % 60)}s"
+            else:
+                elapsed_str = f"{elapsed:.1f}s"
+            typer.echo(f"{_timestamp()} Agent completed ({elapsed_str})")
         # Print output to console
         if result.stdout:
             typer.echo(result.stdout)
@@ -361,7 +394,7 @@ def run(
                 done_count = len(task_list.done)
                 typer.echo(f"Tasks: {done_count} done, {todo_count} remaining")
             # Show file changes
-            success, changes = get_file_changes()
+            _, changes = get_file_changes()
             typer.echo(f"Files: {changes}")
 
         # Check stop conditions after running
@@ -492,7 +525,7 @@ def init(
     existing_tasks_context = get_existing_tasks_context(tasks_path)
     meta_prompt = meta_prompt.replace("{{existing_tasks}}", existing_tasks_context)
 
-    output, error = run_claude_for_planning(meta_prompt)
+    config, error = run_claude_with_retry(meta_prompt)
 
     use_suggestions = False
     doc_files = "README.md, CLAUDE.md"
@@ -501,38 +534,30 @@ def init(
 
     if error:
         typer.echo(error, err=True)
-    elif output:
-        config = parse_markdown_from_output(output)
-        if config:
-            suggested_tasks = config.get("tasks", [])
-            suggested_constraints = config.get("constraints", {})
+    elif config:
+        suggested_tasks = config.get("tasks", [])
+        suggested_constraints = config.get("constraints", {})
 
-            typer.echo("\nSuggested tasks:")
-            for task_desc in suggested_tasks:
-                typer.echo(f"  - {task_desc}")
+        typer.echo("\nSuggested tasks:")
+        for task_desc in suggested_tasks:
+            typer.echo(f"  - {task_desc}")
 
-            # Show suggested constraints if present
-            if suggested_constraints:
-                typer.echo("\nSuggested security constraints:")
-                security_mode = suggested_constraints.get(
-                    "security_mode", "conservative"
+        # Show suggested constraints if present
+        if suggested_constraints:
+            typer.echo("\nSuggested security constraints:")
+            security_mode = suggested_constraints.get("security_mode", "conservative")
+            typer.echo(f"  Security mode: {security_mode}")
+            if security_mode == "path_restricted":
+                allow_paths = suggested_constraints.get("allow_paths", "")
+                typer.echo(f"  Allowed paths: {allow_paths}")
+            if "internet_access" in suggested_constraints:
+                typer.echo(
+                    f"  Internet access: {suggested_constraints['internet_access']}"
                 )
-                typer.echo(f"  Security mode: {security_mode}")
-                if security_mode == "path_restricted":
-                    allow_paths = suggested_constraints.get("allow_paths", "")
-                    typer.echo(f"  Allowed paths: {allow_paths}")
-                if "internet_access" in suggested_constraints:
-                    typer.echo(
-                        f"  Internet access: {suggested_constraints['internet_access']}"
-                    )
 
-            if typer.confirm("\nUse these suggestions?", default=True):
-                tasks = [f"- [ ] {task_desc}" for task_desc in suggested_tasks]
-                use_suggestions = True
-        else:
-            typer.echo("Could not parse Claude's suggestions.")
-    else:
-        typer.echo("Claude returned no output.")
+        if typer.confirm("\nUse these suggestions?", default=True):
+            tasks = [f"- [ ] {task_desc}" for task_desc in suggested_tasks]
+            use_suggestions = True
 
     # Manual entry if suggestions not used
     if not use_suggestions:
@@ -675,18 +700,13 @@ def _run_identify_tasks(tasks_file: Path) -> None:
     existing_tasks_context = get_existing_tasks_context(tasks_file)
     meta_prompt = meta_prompt.replace("{{existing_tasks}}", existing_tasks_context)
 
-    # Run Claude for planning
-    output, error = run_claude_for_planning(meta_prompt)
+    # Run Claude for planning with retry
+    config, error = run_claude_with_retry(meta_prompt)
 
     if error:
         typer.echo(error, err=True)
         return
 
-    if not output:
-        typer.echo("Claude returned no output.")
-        return
-
-    config = parse_markdown_from_output(output)
     if not config or not config.get("tasks"):
         typer.echo("Could not identify any new tasks.")
         return
@@ -807,18 +827,13 @@ def suggest(
     existing_tasks_context = get_existing_tasks_context(tasks_file)
     meta_prompt = meta_prompt.replace("{{existing_tasks}}", existing_tasks_context)
 
-    # Run Claude for planning
-    output, error = run_claude_for_planning(meta_prompt)
+    # Run Claude for planning with retry
+    config, error = run_claude_with_retry(meta_prompt)
 
     if error:
         typer.echo(error, err=True)
         raise typer.Exit(1)
 
-    if not output:
-        typer.echo("Claude returned no output.")
-        raise typer.Exit(1)
-
-    config = parse_markdown_from_output(output)
     if not config or not config.get("tasks"):
         typer.echo("No tasks suggested.")
         return
@@ -918,6 +933,283 @@ def spec(
     typer.echo(f"Created {spec_file}")
     typer.echo("\nTo link this spec to a task, add to TASKS.md:")
     typer.echo(f"  - [ ] Implement {display_name} (see {spec_file})")
+
+
+@app.command()
+def upgrade(
+    target: Optional[str] = typer.Argument(
+        None,
+        help="File to upgrade: 'prompt', 'config', 'tasks', or omit for all",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Show what would change without modifying files",
+    ),
+    force: bool = typer.Option(
+        False,
+        "-f",
+        "--force",
+        help="Skip confirmation prompt",
+    ),
+    no_backup: bool = typer.Option(
+        False,
+        "--no-backup",
+        help="Don't create .bak file for LOOP-PROMPT.md",
+    ),
+    templates_dir: Optional[Path] = typer.Option(
+        None,
+        "--templates",
+        "-t",
+        help="Templates directory (default: package templates)",
+    ),
+) -> None:
+    """Upgrade wiggum-managed files to the latest version.
+
+    Upgrades LOOP-PROMPT.md, .wiggum.toml, and TASKS.md structure.
+
+    Examples:
+        wiggum upgrade           # Check and upgrade all files
+        wiggum upgrade prompt    # Only upgrade LOOP-PROMPT.md
+        wiggum upgrade config    # Only upgrade .wiggum.toml
+        wiggum upgrade tasks     # Only upgrade TASKS.md structure
+    """
+    import tomli_w
+
+    from wiggum import __version__ as current_version
+    from wiggum.upgrade import (
+        add_missing_task_sections,
+        extract_template_version,
+        get_missing_config_options,
+        get_next_backup_path,
+        is_version_outdated,
+        merge_config_with_defaults,
+        tasks_file_needs_upgrade,
+    )
+
+    # Validate target
+    valid_targets = {"prompt", "config", "tasks", None}
+    if target not in valid_targets:
+        typer.echo(
+            f"Unknown target: '{target}'. Use 'prompt', 'config', or 'tasks'.",
+            err=True,
+        )
+        raise typer.Exit(1)
+
+    templates_dir = resolve_templates_dir(templates_dir)
+    prompt_template_path = templates_dir / "LOOP-PROMPT.md"
+
+    prompt_path = Path("LOOP-PROMPT.md")
+    config_path = Path(CONFIG_FILE)
+    tasks_path = Path("TASKS.md")
+
+    # Determine which files to upgrade
+    upgrade_prompt = target is None or target == "prompt"
+    upgrade_config = target is None or target == "config"
+    upgrade_tasks = target is None or target == "tasks"
+
+    # Check if any managed files exist
+    any_exists = prompt_path.exists() or config_path.exists() or tasks_path.exists()
+    if not any_exists:
+        typer.echo("No wiggum files found. Run 'wiggum init' first.", err=True)
+        raise typer.Exit(1)
+
+    # Read files once
+    prompt_content = prompt_path.read_text() if prompt_path.exists() else None
+    tasks_content = tasks_path.read_text() if tasks_path.exists() else None
+    existing_config = read_config() if config_path.exists() else {}
+
+    # Collect changes
+    changes = []
+
+    # Check LOOP-PROMPT.md
+    prompt_outdated = False
+    if upgrade_prompt and prompt_content is not None:
+        prompt_current_version = extract_template_version(prompt_content)
+        prompt_outdated = is_version_outdated(prompt_current_version, current_version)
+        if prompt_outdated:
+            version_info = prompt_current_version or "no version tag"
+            changes.append(f"LOOP-PROMPT.md: {version_info} → {current_version}")
+
+    # Check .wiggum.toml
+    missing_options = []
+    if upgrade_config and existing_config:
+        missing_options = get_missing_config_options(existing_config)
+        if missing_options:
+            changes.append(
+                f".wiggum.toml: {len(missing_options)} new option(s) available"
+            )
+            for section, key, default in missing_options:
+                changes.append(f"  - [{section}] {key} = {repr(default)}")
+
+    # Check TASKS.md
+    tasks_outdated = False
+    if upgrade_tasks and tasks_content is not None:
+        tasks_outdated = tasks_file_needs_upgrade(tasks_content)
+        if tasks_outdated:
+            changes.append("TASKS.md: missing required sections")
+
+    # Show status
+    typer.echo("Checking wiggum files...\n")
+
+    if not changes:
+        typer.echo("All files are up to date.")
+        return
+
+    for change in changes:
+        typer.echo(change)
+    typer.echo()
+
+    # Handle dry-run
+    if dry_run:
+        return
+
+    # Confirm upgrade
+    if not force:
+        if not typer.confirm("Upgrade?", default=False):
+            typer.echo("Aborted.")
+            return
+
+    # Apply upgrades
+    if upgrade_prompt and prompt_outdated and prompt_content is not None:
+        # Backup current file
+        if not no_backup:
+            backup_path = get_next_backup_path(prompt_path)
+            backup_path.write_text(prompt_content)
+            typer.echo(f"✓ Backed up LOOP-PROMPT.md → {backup_path.name}")
+
+        # Write new template
+        template_content = prompt_template_path.read_text()
+        prompt_path.write_text(template_content)
+        typer.echo(f"✓ LOOP-PROMPT.md upgraded to {current_version}")
+
+    if upgrade_config and missing_options:
+        merged = merge_config_with_defaults(existing_config)
+        config_path.write_text(tomli_w.dumps(merged))
+        typer.echo("✓ .wiggum.toml updated with new options")
+
+    if upgrade_tasks and tasks_outdated and tasks_content is not None:
+        upgraded_content = add_missing_task_sections(tasks_content)
+        tasks_path.write_text(upgraded_content)
+        typer.echo("✓ TASKS.md structure updated")
+
+
+# Files managed by wiggum that can be cleaned
+MANAGED_CONFIG_FILES = ["LOOP-PROMPT.md", ".wiggum.toml"]
+TASKS_FILE = "TASKS.md"
+
+
+@app.command()
+def clean(
+    all_files: bool = typer.Option(
+        False,
+        "--all",
+        help="Also remove TASKS.md",
+    ),
+    keep_tasks: bool = typer.Option(
+        False,
+        "--keep-tasks",
+        help="Explicitly keep TASKS.md (no prompt)",
+    ),
+    force: bool = typer.Option(
+        False,
+        "-f",
+        "--force",
+        help="Skip confirmation prompts",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Show what would be removed without deleting",
+    ),
+) -> None:
+    """Remove wiggum-managed files from the current directory.
+
+    By default, removes LOOP-PROMPT.md and .wiggum.toml.
+    TASKS.md is kept by default (prompts unless --keep-tasks or --all).
+
+    Examples:
+        wiggum clean              # Interactive removal
+        wiggum clean --keep-tasks # Remove config, keep tasks
+        wiggum clean --all        # Remove everything including TASKS.md
+        wiggum clean --dry-run    # Preview what would be removed
+    """
+    # Check for conflicting flags
+    if all_files and keep_tasks:
+        typer.echo("Error: Cannot use --all and --keep-tasks together.", err=True)
+        raise typer.Exit(1)
+
+    # Find existing config files
+    config_files_to_remove = [f for f in MANAGED_CONFIG_FILES if Path(f).exists()]
+    tasks_exists = Path(TASKS_FILE).exists()
+
+    # Determine what to remove
+    files_to_remove = config_files_to_remove.copy()
+    remove_tasks = False
+
+    if tasks_exists:
+        if all_files:
+            # --all: remove tasks without asking
+            files_to_remove.append(TASKS_FILE)
+            remove_tasks = True
+        elif keep_tasks:
+            # --keep-tasks: explicitly keep tasks
+            remove_tasks = False
+        elif not force and not dry_run:
+            # Interactive: ask about TASKS.md
+            typer.echo(
+                "TASKS.md contains your task list. Remove it too? [y/N] ", nl=False
+            )
+            response = typer.prompt("", default="n", show_default=False).lower()
+            if response == "y":
+                files_to_remove.append(TASKS_FILE)
+                remove_tasks = True
+
+    # Check if there's anything to clean
+    if not files_to_remove and (not tasks_exists or keep_tasks or not all_files):
+        typer.echo("No wiggum files found in current directory.")
+        return
+
+    # Handle dry-run
+    if dry_run:
+        if files_to_remove:
+            typer.echo("Would remove:")
+            for f in files_to_remove:
+                typer.echo(f"  - {f}")
+        if tasks_exists and not remove_tasks:
+            typer.echo("Would keep:")
+            typer.echo(f"  - {TASKS_FILE} (use --all to remove)")
+        return
+
+    # If only tasks exist and we're not removing them
+    if not config_files_to_remove and tasks_exists and not remove_tasks:
+        typer.echo("No wiggum files found in current directory.")
+        return
+
+    # Confirm removal
+    if not force:
+        typer.echo("This will remove wiggum configuration files:")
+        for f in files_to_remove:
+            typer.echo(f"  - {f}")
+        typer.echo()
+        if not typer.confirm("Remove these files?", default=False):
+            typer.echo("Aborted.")
+            return
+
+    # Remove files
+    for f in files_to_remove:
+        try:
+            Path(f).unlink()
+            typer.echo(f"✓ Removed {f}")
+        except OSError as e:
+            typer.echo(f"Error removing {f}: {e}", err=True)
+
+    # Show status of tasks file
+    if tasks_exists and not remove_tasks:
+        if force:
+            typer.echo(f"  Kept {TASKS_FILE} (use --all to include)")
+        else:
+            typer.echo(f"  Kept {TASKS_FILE}")
 
 
 if __name__ == "__main__":
