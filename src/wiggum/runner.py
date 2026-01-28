@@ -5,6 +5,63 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 from wiggum.agents import check_cli_available, get_cli_error_message
+from wiggum.parsing import parse_markdown_from_output
+
+
+RETRY_PROMPT_TEMPLATE = """Your previous response could not be parsed. Please respond again using this exact format:
+
+```markdown
+## Tasks
+
+- [ ] Task description 1
+- [ ] Task description 2
+```
+
+Your previous response was:
+{previous_output}
+
+Original request:
+{original_prompt}"""
+
+
+def run_claude_with_retry(
+    prompt: str, max_retries: int = 3
+) -> Tuple[Optional[dict], Optional[str]]:
+    """Run Claude and retry if the output cannot be parsed.
+
+    Args:
+        prompt: The planning prompt to send to Claude.
+        max_retries: Maximum number of attempts (default: 3).
+
+    Returns:
+        A tuple of (parsed_result, error_message). If successful, parsed_result
+        is a dict with 'tasks' and 'constraints' keys. If failed, parsed_result
+        is None and error_message contains the reason.
+    """
+    current_prompt = prompt
+
+    for _ in range(max_retries):
+        output, error = run_claude_for_planning(current_prompt)
+
+        # Return immediately on Claude CLI errors
+        if error:
+            return None, error
+
+        # Return error if no output
+        if not output:
+            return None, "Claude returned no output"
+
+        result = parse_markdown_from_output(output)
+
+        if result:
+            return result, None
+
+        # Build retry prompt with format hint and previous output
+        current_prompt = RETRY_PROMPT_TEMPLATE.format(
+            previous_output=output, original_prompt=prompt
+        )
+
+    return None, f"Could not parse Claude's response after {max_retries} attempts"
 
 
 def run_claude_for_planning(meta_prompt: str) -> Tuple[Optional[str], Optional[str]]:

@@ -31,7 +31,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -60,7 +61,8 @@ security_mode: yolo
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -90,7 +92,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -123,7 +126,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -150,7 +154,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -180,7 +185,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -205,7 +211,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -222,7 +229,7 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning",
+                "wiggum.runner.run_claude_for_planning",
                 return_value=(None, "Error: 'claude' command not found."),
             ):
                 result = runner.invoke(
@@ -249,7 +256,8 @@ security_mode: conservative
         with runner.isolated_filesystem(temp_dir=tmp_path):
             Path("TASKS.md").write_text("# Tasks\n\n## Todo\n\n")
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(app, ["suggest", "--yes"])
             content = Path("TASKS.md").read_text()
@@ -274,7 +282,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -301,7 +310,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -331,7 +341,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -363,7 +374,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 # Accept first, reject second
                 result = runner.invoke(
@@ -396,7 +408,8 @@ security_mode: conservative
 
         with runner.isolated_filesystem(temp_dir=tmp_path):
             with patch(
-                "wiggum.cli.run_claude_for_planning", return_value=(mock_output, None)
+                "wiggum.runner.run_claude_for_planning",
+                return_value=(mock_output, None),
             ):
                 result = runner.invoke(
                     app,
@@ -437,7 +450,7 @@ security_mode: conservative
             # Copy README to isolated filesystem
             Path("README.md").write_text(readme_file.read_text())
             with patch(
-                "wiggum.cli.run_claude_for_planning", side_effect=capture_prompt
+                "wiggum.runner.run_claude_for_planning", side_effect=capture_prompt
             ):
                 runner.invoke(
                     app,

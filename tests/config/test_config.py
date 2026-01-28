@@ -444,11 +444,7 @@ class TestRunCommandConfig:
         mock_agent.run.side_effect = mock_agent_run
 
         with patch("wiggum.agents.check_cli_available", return_value=True):
-
-
             with patch("wiggum.cli.get_agent", return_value=mock_agent):
-
-
                 result = runner.invoke(app, ["run", "--force", "--no-branch"])
 
         assert result.exit_code == 0
@@ -483,12 +479,10 @@ class TestRunCommandConfig:
         mock_agent.run.side_effect = mock_agent_run
 
         with patch("wiggum.agents.check_cli_available", return_value=True):
-
-
             with patch("wiggum.cli.get_agent", return_value=mock_agent):
-
-
-                result = runner.invoke(app, ["run", "--reset", "--force", "--no-branch"])
+                result = runner.invoke(
+                    app, ["run", "--reset", "--force", "--no-branch"]
+                )
 
         assert result.exit_code == 0
         # --reset should override config - NO call should have continue_session=True
@@ -522,12 +516,10 @@ class TestRunCommandConfig:
         mock_agent.run.side_effect = mock_agent_run
 
         with patch("wiggum.agents.check_cli_available", return_value=True):
-
-
             with patch("wiggum.cli.get_agent", return_value=mock_agent):
-
-
-                result = runner.invoke(app, ["run", "--continue", "--force", "--no-branch"])
+                result = runner.invoke(
+                    app, ["run", "--continue", "--force", "--no-branch"]
+                )
 
         assert result.exit_code == 0
         # CLI flag should override config - second call should have continue_session=True
@@ -605,3 +597,118 @@ class TestAvailableAgents:
         assert "claude" in agents
         assert "codex" in agents
         assert "gemini" in agents
+
+
+class TestConfigSchemaValidation:
+    """Tests for config schema validation."""
+
+    def _setup_project(self, tmp_path: Path, config_content: str = "") -> None:
+        """Set up a minimal project for validation tests."""
+        os.chdir(tmp_path)
+        (tmp_path / "LOOP-PROMPT.md").write_text("test prompt")
+        (tmp_path / "TASKS.md").write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
+        if config_content:
+            (tmp_path / ".wiggum.toml").write_text(config_content)
+
+    def test_unknown_section_shows_warning(self, tmp_path: Path) -> None:
+        """Unknown section in config should show warning."""
+        self._setup_project(tmp_path, "[unknown_section]\nfoo = 'bar'\n")
+
+        result = runner.invoke(app, ["run", "--dry-run"])
+
+        assert result.exit_code == 0
+        assert "unknown_section" in result.output.lower()
+        assert "warning" in result.output.lower() or "unknown" in result.output.lower()
+
+    def test_unknown_key_in_known_section_shows_warning(self, tmp_path: Path) -> None:
+        """Unknown key in known section should show warning."""
+        self._setup_project(tmp_path, "[loop]\nunknown_key = 'value'\n")
+
+        result = runner.invoke(app, ["run", "--dry-run"])
+
+        assert result.exit_code == 0
+        assert "unknown_key" in result.output.lower()
+
+    def test_typo_in_agent_name_shows_error(self, tmp_path: Path) -> None:
+        """Typo in agent name should show error with suggestions."""
+        self._setup_project(tmp_path, '[loop]\nagent = "claud"\n')
+
+        result = runner.invoke(app, ["run", "--dry-run"])
+
+        assert result.exit_code == 1
+        # Should mention the invalid agent and suggest valid ones
+        assert "claud" in result.output.lower()
+        assert "claude" in result.output.lower()
+
+    def test_invalid_agent_lists_available_agents(self, tmp_path: Path) -> None:
+        """Invalid agent name should list all available agents."""
+        self._setup_project(tmp_path, '[loop]\nagent = "invalid_agent"\n')
+
+        result = runner.invoke(app, ["run", "--dry-run"])
+
+        assert result.exit_code == 1
+        assert "claude" in result.output.lower()
+        assert "codex" in result.output.lower()
+        assert "gemini" in result.output.lower()
+
+    def test_wrong_type_for_yolo_shows_error(self, tmp_path: Path) -> None:
+        """String value for boolean yolo should show error."""
+        self._setup_project(tmp_path, '[security]\nyolo = "yes"\n')
+
+        result = runner.invoke(app, ["run", "--dry-run"])
+
+        assert result.exit_code == 1
+        assert "yolo" in result.output.lower()
+        assert "bool" in result.output.lower() or "true" in result.output.lower()
+
+    def test_wrong_type_for_max_iterations_shows_error(self, tmp_path: Path) -> None:
+        """String value for integer max_iterations should show error."""
+        self._setup_project(tmp_path, '[loop]\nmax_iterations = "ten"\n')
+
+        result = runner.invoke(app, ["run", "--dry-run"])
+
+        assert result.exit_code == 1
+        assert "max_iterations" in result.output.lower()
+
+    def test_wrong_type_for_verbose_shows_error(self, tmp_path: Path) -> None:
+        """String value for boolean verbose should show error."""
+        self._setup_project(tmp_path, '[output]\nverbose = "yes"\n')
+
+        result = runner.invoke(app, ["run", "--dry-run"])
+
+        assert result.exit_code == 1
+        assert "verbose" in result.output.lower()
+
+    def test_valid_config_passes_validation(self, tmp_path: Path) -> None:
+        """Valid config should pass validation without warnings or errors."""
+        self._setup_project(
+            tmp_path,
+            """[security]
+yolo = true
+allow_paths = "src/"
+
+[loop]
+max_iterations = 5
+agent = "claude"
+
+[output]
+verbose = true
+""",
+        )
+
+        result = runner.invoke(app, ["run", "--dry-run"])
+
+        assert result.exit_code == 0
+        # Should not contain validation warnings
+        assert "unknown" not in result.output.lower()
+        assert "warning" not in result.output.lower()
+
+    def test_similar_typo_suggests_correction(self, tmp_path: Path) -> None:
+        """Typo like 'max_iteration' should suggest 'max_iterations'."""
+        self._setup_project(tmp_path, "[loop]\nmax_iteration = 5\n")
+
+        result = runner.invoke(app, ["run", "--dry-run"])
+
+        assert result.exit_code == 0  # Warning, not error
+        assert "max_iteration" in result.output.lower()
+        assert "max_iterations" in result.output.lower()

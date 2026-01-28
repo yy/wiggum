@@ -28,7 +28,9 @@ class TestInitSecurityQuestions:
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
             # Mock Claude to avoid actually calling it
-            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
+            with patch(
+                "wiggum.runner.run_claude_for_planning", return_value=(None, None)
+            ):
                 # Input: doc files, task, empty line to end tasks, security choice (1=conservative), git (n)
                 result = runner.invoke(
                     app,
@@ -55,7 +57,9 @@ class TestInitSecurityQuestions:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
+            with patch(
+                "wiggum.runner.run_claude_for_planning", return_value=(None, None)
+            ):
                 # Choose conservative mode (option 1), git (n)
                 result = runner.invoke(
                     app,
@@ -81,7 +85,9 @@ class TestInitSecurityQuestions:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
+            with patch(
+                "wiggum.runner.run_claude_for_planning", return_value=(None, None)
+            ):
                 # Choose path-restricted mode (option 2), provide paths, git (n)
                 result = runner.invoke(
                     app,
@@ -107,7 +113,9 @@ class TestInitSecurityQuestions:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
+            with patch(
+                "wiggum.runner.run_claude_for_planning", return_value=(None, None)
+            ):
                 # Choose YOLO mode (option 3), git (n)
                 result = runner.invoke(
                     app,
@@ -189,7 +197,9 @@ class TestSecurityModeDisplay:
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
 
-            with patch("wiggum.cli.run_claude_for_planning", return_value=(None, None)):
+            with patch(
+                "wiggum.runner.run_claude_for_planning", return_value=(None, None)
+            ):
                 result = runner.invoke(
                     app,
                     ["init"],

@@ -484,3 +484,138 @@ class TestDryRunWithProgress:
         assert result.exit_code == 0
         # Should mention progress tracking in output
         assert "progress" in result.output.lower()
+
+
+class TestTimestampedDebugOutput:
+    """Tests for timestamped debug output with --verbose flag."""
+
+    def test_verbose_shows_timestamps_during_execution(self, tmp_path: Path) -> None:
+        """When --verbose is enabled, timestamped debug messages are shown during execution."""
+        from wiggum.agents import AgentResult
+
+        prompt_file = tmp_path / "LOOP-PROMPT.md"
+        prompt_file.write_text("test prompt")
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
+
+        def mock_agent_run(config):
+            tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] task1\n")
+            return AgentResult(stdout="Claude output", stderr="", return_code=0)
+
+        mock_agent = MagicMock()
+        mock_agent.name = "claude"
+        mock_agent.run.side_effect = mock_agent_run
+
+        with patch("wiggum.agents.check_cli_available", return_value=True):
+            with patch("wiggum.cli.get_agent", return_value=mock_agent):
+                result = runner.invoke(
+                    app,
+                    [
+                        "run",
+                        "-f",
+                        str(prompt_file),
+                        "--tasks",
+                        str(tasks_file),
+                        "--verbose",
+                        "-n",
+                        "5",
+                        "--force",
+                        "--no-branch",
+                    ],
+                )
+
+        assert result.exit_code == 0
+        # Should contain timestamp pattern [HH:MM:SS]
+        import re
+
+        timestamp_pattern = r"\[\d{2}:\d{2}:\d{2}\]"
+        assert re.search(timestamp_pattern, result.output), (
+            f"Expected timestamp pattern {timestamp_pattern} not found in output:\n{result.output}"
+        )
+        # Should show agent start message
+        assert "claude" in result.output.lower()
+
+    def test_verbose_shows_agent_start_message(self, tmp_path: Path) -> None:
+        """When --verbose is enabled, shows message when agent starts."""
+        from wiggum.agents import AgentResult
+
+        prompt_file = tmp_path / "LOOP-PROMPT.md"
+        prompt_file.write_text("test prompt")
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
+
+        def mock_agent_run(config):
+            tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] task1\n")
+            return AgentResult(stdout="Claude output", stderr="", return_code=0)
+
+        mock_agent = MagicMock()
+        mock_agent.name = "claude"
+        mock_agent.run.side_effect = mock_agent_run
+
+        with patch("wiggum.agents.check_cli_available", return_value=True):
+            with patch("wiggum.cli.get_agent", return_value=mock_agent):
+                result = runner.invoke(
+                    app,
+                    [
+                        "run",
+                        "-f",
+                        str(prompt_file),
+                        "--tasks",
+                        str(tasks_file),
+                        "--verbose",
+                        "-n",
+                        "5",
+                        "--force",
+                        "--no-branch",
+                    ],
+                )
+
+        assert result.exit_code == 0
+        # Should contain "Running" or "Starting" agent message
+        assert (
+            "running" in result.output.lower() or "starting" in result.output.lower()
+        ), f"Expected 'running' or 'starting' message in output:\n{result.output}"
+
+    def test_no_timestamps_without_verbose(self, tmp_path: Path) -> None:
+        """Without --verbose, no timestamped debug messages are shown."""
+        from wiggum.agents import AgentResult
+
+        prompt_file = tmp_path / "LOOP-PROMPT.md"
+        prompt_file.write_text("test prompt")
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text("# Tasks\n\n## Todo\n\n- [ ] task1\n")
+
+        def mock_agent_run(config):
+            tasks_file.write_text("# Tasks\n\n## Done\n\n- [x] task1\n")
+            return AgentResult(stdout="Claude output", stderr="", return_code=0)
+
+        mock_agent = MagicMock()
+        mock_agent.name = "claude"
+        mock_agent.run.side_effect = mock_agent_run
+
+        with patch("wiggum.agents.check_cli_available", return_value=True):
+            with patch("wiggum.cli.get_agent", return_value=mock_agent):
+                result = runner.invoke(
+                    app,
+                    [
+                        "run",
+                        "-f",
+                        str(prompt_file),
+                        "--tasks",
+                        str(tasks_file),
+                        "-n",
+                        "5",
+                        "--force",
+                        "--no-branch",
+                    ],
+                )
+
+        assert result.exit_code == 0
+        # Should NOT contain timestamp pattern [HH:MM:SS] for debug messages
+        import re
+
+        # Look for timestamp at start of line (debug message)
+        timestamp_at_line_start = r"^\[\d{2}:\d{2}:\d{2}\]"
+        assert not re.search(timestamp_at_line_start, result.output, re.MULTILINE), (
+            f"Found unexpected timestamp in output:\n{result.output}"
+        )
