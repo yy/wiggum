@@ -77,3 +77,5 @@ If you can't describe what behavior would regress without the test, you don't ne
 
 - Only work on ONE task per session
 - If blocked, update TASKS.md and work on the blocker first
+
+<!-- wiggum-template: 0.5.0 -->
