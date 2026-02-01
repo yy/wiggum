@@ -12,6 +12,7 @@ WIGGUM_CONFIG_DEFAULTS = {
     "git": {"enabled": False, "branch_prefix": "wiggum"},
     "output": {"verbose": False},
     "session": {"continue_session": False},
+    "learning": {"enabled": True, "keep_diary": True, "auto_consolidate": True},
 }
 
 

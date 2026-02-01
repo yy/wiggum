@@ -58,7 +58,34 @@ Settings are stored in `.wiggum.toml` and read by the `run` command:
 - `enabled`: Enable git workflow (default: false)
 - `branch_prefix`: Prefix for auto-generated branch names (default: "wiggum")
 
+**[learning] section:**
+- `enabled`: Enable learning diary capture (default: true)
+- `keep_diary`: Keep `.wiggum/session-diary.md` after consolidation (default: true)
+- `auto_consolidate`: Auto-consolidate diary into CLAUDE.md at session end (default: true)
+
 CLI flags override config file settings.
+
+### Learning Diary Feature
+
+The learning diary allows the agent to capture insights during loop sessions that get consolidated into CLAUDE.md for long-term memory.
+
+**How it works:**
+1. During the loop, the agent can write learnings to `.wiggum/session-diary.md`
+2. After the loop completes, learnings are automatically consolidated into CLAUDE.md
+3. The diary is kept or deleted based on the `keep_diary` setting
+
+**CLI flags:**
+- `--diary` / `--no-diary`: Enable/disable learning diary for this run
+- `--no-consolidate`: Skip consolidation after run (diary is preserved)
+- `--keep-diary` / `--no-keep-diary`: Override whether to keep diary after consolidation
+
+**Diary entry format:**
+```markdown
+### Learning: [short title]
+**Context**: What situation triggered this
+**Insight**: The actual learning
+**Recommendation**: What to do in the future
+```
 
 ### Agent Abstraction Layer
 The `agents` module provides a pluggable architecture for different coding agents:

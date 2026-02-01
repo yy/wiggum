@@ -64,6 +64,26 @@ For trivial tasks (string changes, renames, config tweaks), you may skip the sub
 16. **Update docs**: Ensure documentation ({{doc_files}}) matches the implementation
 17. Update TASKS.md: mark task as `[x]` and move it to the `## Done` section
 
+### Phase 6: Learning Capture (Optional)
+
+If you discovered something worth remembering during this iteration, write it to `.wiggum/session-diary.md`:
+
+**What to capture:**
+- Codebase patterns that work well
+- Anti-patterns or approaches that failed
+- Gotchas or unexpected behaviors
+- Tool configurations that helped
+
+**Format:**
+```markdown
+### Learning: [short title]
+**Context**: What situation triggered this
+**Insight**: The actual learning
+**Recommendation**: What to do in the future
+```
+
+Only write learnings that would help future sessions. Skip trivial observations.
+
 ## When tests are NOT needed
 
 Don't write tests for:
@@ -78,4 +98,4 @@ If you can't describe what behavior would regress without the test, you don't ne
 - Only work on ONE task per session
 - If blocked, update TASKS.md and work on the blocker first
 
-<!-- wiggum-template: 0.5.0 -->
+<!-- wiggum-template: 0.6.0 -->

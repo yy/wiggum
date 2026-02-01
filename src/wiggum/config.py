@@ -32,6 +32,11 @@ CONFIG_SCHEMA: dict[str, dict[str, tuple]] = {
     "session": {
         "continue_session": (False, bool),
     },
+    "learning": {
+        "enabled": (True, bool),
+        "keep_diary": (True, bool),
+        "auto_consolidate": (True, bool),
+    },
 }
 
 
@@ -156,6 +161,9 @@ class ResolvedRunConfig:
     no_branch: bool
     force: bool
     branch_prefix: str
+    learning_enabled: bool
+    keep_diary: bool
+    auto_consolidate: bool
 
 
 def resolve_run_config(
@@ -176,6 +184,11 @@ def resolve_run_config(
     no_branch: bool = False,
     force: bool = False,
     branch_prefix: Optional[str] = None,
+    diary: bool = False,
+    no_diary: bool = False,
+    no_consolidate: bool = False,
+    keep_diary_flag: bool = False,
+    no_keep_diary: bool = False,
 ) -> ResolvedRunConfig:
     """Resolve run configuration from CLI flags and config file.
 
@@ -199,6 +212,11 @@ def resolve_run_config(
         no_branch: CLI --no-branch flag
         force: CLI --force flag
         branch_prefix: CLI --branch-prefix value
+        diary: CLI --diary flag (enable learning diary)
+        no_diary: CLI --no-diary flag (disable learning diary)
+        no_consolidate: CLI --no-consolidate flag (skip consolidation)
+        keep_diary_flag: CLI --keep-diary flag
+        no_keep_diary: CLI --no-keep-diary flag
 
     Returns:
         ResolvedRunConfig with all values resolved.
@@ -276,6 +294,32 @@ def resolve_run_config(
     if branch_prefix is None:
         resolved_branch_prefix = git_config.get("branch_prefix", "wiggum")
 
+    # Check mutually exclusive learning flags
+    if diary and no_diary:
+        raise ValueError(
+            "--diary and --no-diary are mutually exclusive. Cannot use both."
+        )
+    if keep_diary_flag and no_keep_diary:
+        raise ValueError(
+            "--keep-diary and --no-keep-diary are mutually exclusive. Cannot use both."
+        )
+
+    # Resolve learning config
+    learning_config = config.get("learning", {})
+    resolved_learning_enabled = learning_config.get("enabled", True)
+    if diary:
+        resolved_learning_enabled = True
+    elif no_diary:
+        resolved_learning_enabled = False
+    resolved_keep_diary = learning_config.get("keep_diary", True)
+    if keep_diary_flag:
+        resolved_keep_diary = True
+    elif no_keep_diary:
+        resolved_keep_diary = False
+    resolved_auto_consolidate = learning_config.get("auto_consolidate", True)
+    if no_consolidate:
+        resolved_auto_consolidate = False
+
     return ResolvedRunConfig(
         yolo=resolved_yolo,
         allow_paths=resolved_allow_paths,
@@ -291,6 +335,9 @@ def resolve_run_config(
         no_branch=resolved_no_branch,
         force=resolved_force,
         branch_prefix=resolved_branch_prefix,
+        learning_enabled=resolved_learning_enabled,
+        keep_diary=resolved_keep_diary,
+        auto_consolidate=resolved_auto_consolidate,
     )
 
 

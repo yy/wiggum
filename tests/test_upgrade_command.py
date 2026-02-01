@@ -126,7 +126,7 @@ class TestUpgradeCommand:
             result = runner.invoke(app, ["upgrade", "prompt", "--force"])
 
             # LOOP-PROMPT.md should be updated
-            assert "wiggum-template: 0.5.0" in prompt_file.read_text()
+            assert "wiggum-template: 0.6.0" in prompt_file.read_text()
             # Config should be unchanged
             assert config_file.read_text() == config_content
         finally:

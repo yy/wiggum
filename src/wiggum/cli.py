@@ -127,6 +127,31 @@ def run(
         "--branch-prefix",
         help="Prefix for auto-generated branch names (default: 'wiggum')",
     ),
+    diary: bool = typer.Option(
+        False,
+        "--diary",
+        help="Enable learning diary for this run (overrides config)",
+    ),
+    no_diary: bool = typer.Option(
+        False,
+        "--no-diary",
+        help="Disable learning diary for this run",
+    ),
+    no_consolidate: bool = typer.Option(
+        False,
+        "--no-consolidate",
+        help="Skip diary consolidation after run",
+    ),
+    keep_diary: bool = typer.Option(
+        False,
+        "--keep-diary",
+        help="Keep diary file after consolidation (overrides config)",
+    ),
+    no_keep_diary: bool = typer.Option(
+        False,
+        "--no-keep-diary",
+        help="Delete diary file after consolidation",
+    ),
 ) -> None:
     """Run the agent loop. Stops when all tasks in TASKS.md are complete."""
     # Validate config file before resolving
@@ -161,6 +186,11 @@ def run(
             no_branch=no_branch,
             force=force,
             branch_prefix=branch_prefix,
+            diary=diary,
+            no_diary=no_diary,
+            no_consolidate=no_consolidate,
+            keep_diary_flag=keep_diary,
+            no_keep_diary=no_keep_diary,
         )
     except ValueError as e:
         typer.echo(f"Error: {e}", err=True)
@@ -321,6 +351,12 @@ def run(
             typer.echo(get_cli_error_message("gh"), err=True)
             raise typer.Exit(1)
 
+    # Ensure diary directory exists if learning is enabled
+    if cfg.learning_enabled:
+        from wiggum.learning import ensure_diary_dir
+
+        ensure_diary_dir()
+
     def check_stop_conditions() -> Optional[str]:
         """Check stop conditions and return exit message if should stop."""
         if not cfg.keep_running and not tasks_remaining(cfg.tasks_file):
@@ -406,6 +442,24 @@ def run(
     typer.echo(f"\n{'=' * 60}")
     typer.echo("Loop completed")
     typer.echo(f"{'=' * 60}")
+
+    # Learning consolidation
+    if cfg.learning_enabled and cfg.auto_consolidate:
+        from wiggum.learning import (
+            clear_diary,
+            consolidate_learnings,
+            has_diary_content,
+        )
+
+        if has_diary_content():
+            typer.echo("\nConsolidating learnings...")
+            success = consolidate_learnings(cfg.agent, cfg.yolo)
+            if success:
+                typer.echo("Learnings added to CLAUDE.md")
+                if not cfg.keep_diary:
+                    clear_diary()
+            else:
+                typer.echo("Warning: Failed to consolidate learnings", err=True)
 
     # Show git summary and handle PR creation
     if in_git_repo and created_branch:
