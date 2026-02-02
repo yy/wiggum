@@ -31,6 +31,12 @@ from wiggum.runner import (
     run_claude_with_retry,
     write_log_entry,
 )
+from wiggum.changelog import (
+    clear_done_tasks,
+    format_changelog,
+    merge_changelog,
+    tasks_to_changelog_entries,
+)
 from wiggum.tasks import (
     add_task_to_file,
     get_all_tasks,
@@ -1264,6 +1270,116 @@ def clean(
             typer.echo(f"  Kept {TASKS_FILE} (use --all to include)")
         else:
             typer.echo(f"  Kept {TASKS_FILE}")
+
+
+@app.command()
+def changelog(
+    version: Optional[str] = typer.Option(
+        None,
+        "-v",
+        "--version",
+        help="Version string (default: 'Unreleased')",
+    ),
+    output: Path = typer.Option(
+        Path("CHANGELOG.md"),
+        "-o",
+        "--output",
+        help="Output file (default: CHANGELOG.md)",
+    ),
+    tasks_file: Path = typer.Option(
+        Path("TASKS.md"),
+        "-f",
+        "--tasks-file",
+        help="Tasks file to read (default: TASKS.md)",
+    ),
+    append: bool = typer.Option(
+        False,
+        "--append",
+        help="Append to existing changelog instead of overwriting",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Preview output without writing file",
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Skip confirmation prompt",
+    ),
+    clear_done: bool = typer.Option(
+        False,
+        "--clear-done",
+        help="Clear Done section in TASKS.md after generating changelog",
+    ),
+) -> None:
+    """Generate CHANGELOG.md from completed tasks in TASKS.md.
+
+    Reads completed tasks from TASKS.md, categorizes them based on their
+    description prefixes (Add/Fix/Update/Remove), and generates a changelog
+    following the Keep a Changelog format.
+
+    Examples:
+        wiggum changelog                    # All done tasks as "Unreleased"
+        wiggum changelog --version 0.8.0    # Create versioned release section
+        wiggum changelog --dry-run          # Preview output
+        wiggum changelog --append           # Add to existing changelog
+        wiggum changelog --clear-done       # Clear Done section after generating
+    """
+    # Get completed tasks
+    task_list = get_all_tasks(tasks_file)
+
+    if task_list is None:
+        typer.echo(f"No tasks file found at {tasks_file}", err=True)
+        raise typer.Exit(1)
+
+    if not task_list.done:
+        typer.echo("No completed tasks found in Done section.")
+        raise typer.Exit(0)
+
+    # Categorize tasks
+    entries = tasks_to_changelog_entries(task_list.done)
+
+    # Determine version string
+    version_str = version or "Unreleased"
+
+    # Generate or merge changelog
+    if append and output.exists():
+        existing_content = output.read_text()
+        changelog_content = merge_changelog(
+            existing_content, entries, version=version_str
+        )
+    else:
+        changelog_content = format_changelog(entries, version=version_str)
+
+    # Handle dry-run
+    if dry_run:
+        typer.echo("Preview:\n")
+        typer.echo(changelog_content)
+        return
+
+    # Confirm unless --force
+    if not force and output.exists() and not append:
+        typer.echo(f"This will overwrite {output}.")
+        if not typer.confirm("Continue?", default=False):
+            typer.echo("Aborted.")
+            return
+
+    # Write changelog
+    output.write_text(changelog_content)
+    typer.echo(f"✓ Generated {output}")
+
+    # Show summary
+    task_count = len(task_list.done)
+    category_counts = ", ".join(
+        f"{len(v)} {k.lower()}" for k, v in entries.items() if v
+    )
+    typer.echo(f"  {task_count} task(s): {category_counts}")
+
+    # Clear done tasks if requested
+    if clear_done:
+        clear_done_tasks(tasks_file)
+        typer.echo(f"✓ Cleared Done section in {tasks_file}")
 
 
 if __name__ == "__main__":
