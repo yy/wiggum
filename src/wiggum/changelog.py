@@ -8,14 +8,6 @@ from typing import Optional
 
 
 @dataclass
-class ChangelogEntry:
-    """A single changelog entry."""
-
-    description: str
-    category: str
-
-
-@dataclass
 class ChangelogVersion:
     """A version section in the changelog."""
 
@@ -42,6 +34,41 @@ CATEGORY_KEYWORDS = {
 
 # Order for displaying categories in changelog
 CATEGORY_ORDER = ["Added", "Changed", "Fixed", "Removed"]
+
+
+def _format_version_header(version: str, version_date: Optional[str] = None) -> str:
+    """Format a version header line for the changelog.
+
+    Args:
+        version: Version string (e.g., "0.8.0" or "Unreleased").
+        version_date: Date string for the version (e.g., "2024-01-15").
+
+    Returns:
+        Formatted version header with trailing newline.
+    """
+    if version == "Unreleased":
+        return "## [Unreleased]\n"
+    date_str = version_date or date.today().isoformat()
+    return f"## [{version}] - {date_str}\n"
+
+
+def _format_entries_by_category(entries: dict[str, list[str]]) -> list[str]:
+    """Format changelog entries grouped by category.
+
+    Args:
+        entries: Dict mapping category names to task lists.
+
+    Returns:
+        List of formatted lines (category headers and task items).
+    """
+    lines: list[str] = []
+    for category in CATEGORY_ORDER:
+        if category in entries and entries[category]:
+            lines.append(f"### {category}\n")
+            for task in entries[category]:
+                lines.append(f"- {task}")
+            lines.append("")  # Blank line after category
+    return lines
 
 
 def categorize_task(description: str) -> str:
@@ -113,19 +140,10 @@ def format_changelog(
         lines.append("# Changelog\n")
 
     # Version header
-    if version == "Unreleased":
-        lines.append("## [Unreleased]\n")
-    else:
-        date_str = version_date or date.today().isoformat()
-        lines.append(f"## [{version}] - {date_str}\n")
+    lines.append(_format_version_header(version, version_date))
 
     # Add entries by category in order
-    for category in CATEGORY_ORDER:
-        if category in entries and entries[category]:
-            lines.append(f"### {category}\n")
-            for task in entries[category]:
-                lines.append(f"- {task}")
-            lines.append("")  # Blank line after category
+    lines.extend(_format_entries_by_category(entries))
 
     return "\n".join(lines).rstrip() + "\n"
 
@@ -251,18 +269,8 @@ def merge_changelog(
     lines = [header.rstrip(), ""]
 
     for v in versions:
-        if v.version == "Unreleased":
-            lines.append("## [Unreleased]\n")
-        else:
-            date_str = v.date or date.today().isoformat()
-            lines.append(f"## [{v.version}] - {date_str}\n")
-
-        for category in CATEGORY_ORDER:
-            if category in v.entries and v.entries[category]:
-                lines.append(f"### {category}\n")
-                for task in v.entries[category]:
-                    lines.append(f"- {task}")
-                lines.append("")
+        lines.append(_format_version_header(v.version, v.date))
+        lines.extend(_format_entries_by_category(v.entries))
 
     return "\n".join(lines).rstrip() + "\n"
 

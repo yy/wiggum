@@ -3,7 +3,7 @@
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import typer
 
@@ -47,6 +47,31 @@ from wiggum.tasks import (
 )
 
 app = typer.Typer(help="Run iterative agent loops with task tracking")
+
+
+def tasks_file_option(
+    short_flag: bool = True,
+    help_text: str = "Tasks file (default: TASKS.md)",
+    allow_none: bool = False,
+) -> Any:
+    """Factory for the tasks file option used across multiple commands.
+
+    Args:
+        short_flag: Whether to include -f as a short option.
+        help_text: Custom help text for the option.
+        allow_none: If True, default is None (for config fallback in run command).
+                    If False, default is Path("TASKS.md").
+
+    Returns:
+        A typer.Option configured for tasks file selection.
+    """
+    flags = ["-f", "--tasks-file"] if short_flag else ["--tasks"]
+    default = None if allow_none else Path("TASKS.md")
+    return typer.Option(
+        default,
+        *flags,
+        help=help_text,
+    )
 
 
 def _run_learning_consolidation(
@@ -93,10 +118,10 @@ def run(
     prompt_file: Optional[Path] = typer.Option(
         None, "-f", "--file", help="Prompt file (default: LOOP-PROMPT.md)"
     ),
-    tasks_file: Optional[Path] = typer.Option(
-        None,
-        "--tasks",
-        help="Tasks file for stop condition (stop when all tasks complete)",
+    tasks_file: Optional[Path] = tasks_file_option(
+        short_flag=False,
+        help_text="Tasks file for stop condition (stop when all tasks complete)",
+        allow_none=True,
     ),
     max_iterations: Optional[int] = typer.Option(
         None, "-n", "--max-iterations", help="Max iterations"
@@ -825,11 +850,8 @@ def _run_identify_tasks(tasks_file: Path) -> None:
 @app.command()
 def add(
     description: str = typer.Argument(..., help="Task description to add"),
-    tasks_file: Path = typer.Option(
-        Path("TASKS.md"),
-        "-f",
-        "--tasks-file",
-        help="Tasks file to add to (default: TASKS.md)",
+    tasks_file: Path = tasks_file_option(
+        help_text="Tasks file to add to (default: TASKS.md)"
     ),
 ) -> None:
     """Add a new task to TASKS.md."""
@@ -846,18 +868,15 @@ def add(
 
 @app.command(name="list")
 def list_tasks(
-    tasks_file: Path = typer.Option(
-        Path("TASKS.md"),
-        "-f",
-        "--tasks-file",
-        help="Tasks file to read (default: TASKS.md)",
+    tasks_file: Path = tasks_file_option(
+        help_text="Tasks file to read (default: TASKS.md)"
     ),
 ) -> None:
     """List tasks from TASKS.md."""
     task_list = get_all_tasks(tasks_file)
 
     if task_list is None:
-        typer.echo(f"No tasks file found at {tasks_file}")
+        typer.echo(f"No tasks file found at {tasks_file}", err=True)
         raise typer.Exit(1)
 
     # Show todo tasks
@@ -877,11 +896,8 @@ def list_tasks(
 
 @app.command()
 def suggest(
-    tasks_file: Path = typer.Option(
-        Path("TASKS.md"),
-        "-f",
-        "--tasks-file",
-        help="Tasks file to add tasks to (default: TASKS.md)",
+    tasks_file: Path = tasks_file_option(
+        help_text="Tasks file to add tasks to (default: TASKS.md)"
     ),
     accept_all: bool = typer.Option(
         False,
@@ -1318,11 +1334,8 @@ def changelog(
         "--output",
         help="Output file (default: CHANGELOG.md)",
     ),
-    tasks_file: Path = typer.Option(
-        Path("TASKS.md"),
-        "-f",
-        "--tasks-file",
-        help="Tasks file to read (default: TASKS.md)",
+    tasks_file: Path = tasks_file_option(
+        help_text="Tasks file to read (default: TASKS.md)"
     ),
     append: bool = typer.Option(
         False,

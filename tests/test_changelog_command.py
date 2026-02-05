@@ -6,6 +6,7 @@ from typer.testing import CliRunner
 
 from wiggum.changelog import (
     categorize_task,
+    clear_done_tasks,
     format_changelog,
     merge_changelog,
     parse_existing_changelog,
@@ -495,3 +496,123 @@ class TestChangelogCommand:
 
             assert result.exit_code == 0
             assert Path("CHANGELOG.md").exists()
+
+
+class TestClearDoneTasks:
+    """Tests for clear_done_tasks() edge cases."""
+
+    def test_nonexistent_file_returns_silently(self, tmp_path: Path) -> None:
+        """Returns without error when file doesn't exist."""
+        tasks_file = tmp_path / "nonexistent.md"
+        # Should not raise
+        clear_done_tasks(tasks_file)
+
+    def test_empty_done_section_preserved(self, tmp_path: Path) -> None:
+        """Preserves the Done header when section is already empty."""
+        tasks_file = tmp_path / "TASKS.md"
+        original = "# Tasks\n\n## Done\n\n## Todo\n\n- [ ] Task\n"
+        tasks_file.write_text(original)
+
+        clear_done_tasks(tasks_file)
+
+        result = tasks_file.read_text()
+        assert "## Done" in result
+        assert "## Todo" in result
+        assert "- [ ] Task" in result
+
+    def test_clears_lowercase_x_checkbox(self, tmp_path: Path) -> None:
+        """Clears tasks with lowercase [x] checkbox."""
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text(
+            "# Tasks\n\n## Done\n\n- [x] Completed task\n\n## Todo\n\n"
+        )
+
+        clear_done_tasks(tasks_file)
+
+        result = tasks_file.read_text()
+        assert "Completed task" not in result
+        assert "## Done" in result
+
+    def test_clears_uppercase_x_checkbox(self, tmp_path: Path) -> None:
+        """Clears tasks with uppercase [X] checkbox."""
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text(
+            "# Tasks\n\n## Done\n\n- [X] Completed task\n\n## Todo\n\n"
+        )
+
+        clear_done_tasks(tasks_file)
+
+        result = tasks_file.read_text()
+        assert "Completed task" not in result
+        assert "## Done" in result
+
+    def test_clears_multiple_tasks(self, tmp_path: Path) -> None:
+        """Clears all completed tasks from Done section."""
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text(
+            "# Tasks\n\n"
+            "## Done\n\n"
+            "- [x] First task\n"
+            "- [x] Second task\n"
+            "- [X] Third task\n\n"
+            "## Todo\n\n"
+        )
+
+        clear_done_tasks(tasks_file)
+
+        result = tasks_file.read_text()
+        assert "First task" not in result
+        assert "Second task" not in result
+        assert "Third task" not in result
+        assert "## Done" in result
+
+    def test_preserves_todo_section(self, tmp_path: Path) -> None:
+        """Preserves tasks in the Todo section."""
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text(
+            "# Tasks\n\n## Done\n\n- [x] Completed\n\n## Todo\n\n- [ ] Pending task\n"
+        )
+
+        clear_done_tasks(tasks_file)
+
+        result = tasks_file.read_text()
+        assert "Completed" not in result
+        assert "Pending task" in result
+
+    def test_no_done_section_unchanged(self, tmp_path: Path) -> None:
+        """File without Done section remains unchanged."""
+        tasks_file = tmp_path / "TASKS.md"
+        original = "# Tasks\n\n## Todo\n\n- [ ] Task\n"
+        tasks_file.write_text(original)
+
+        clear_done_tasks(tasks_file)
+
+        assert tasks_file.read_text() == original
+
+    def test_done_section_at_end_of_file(self, tmp_path: Path) -> None:
+        """Handles Done section at end of file without trailing newline."""
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text(
+            "# Tasks\n\n## Todo\n\n- [ ] Task\n\n## Done\n\n- [x] Completed"
+        )
+
+        clear_done_tasks(tasks_file)
+
+        result = tasks_file.read_text()
+        assert "Completed" not in result
+        assert "## Done" in result
+        assert "- [ ] Task" in result
+
+    def test_preserves_content_after_done_section(self, tmp_path: Path) -> None:
+        """Preserves sections that appear after the Done section."""
+        tasks_file = tmp_path / "TASKS.md"
+        tasks_file.write_text(
+            "# Tasks\n\n## Done\n\n- [x] Completed\n\n## Notes\n\nSome notes here.\n"
+        )
+
+        clear_done_tasks(tasks_file)
+
+        result = tasks_file.read_text()
+        assert "Completed" not in result
+        assert "## Notes" in result
+        assert "Some notes here." in result
