@@ -216,7 +216,7 @@ class TestInitUpdatesGitignore:
     """Tests for .gitignore updates during init."""
 
     def test_init_adds_wiggum_to_existing_gitignore(self, tmp_path: Path) -> None:
-        """Init adds .wiggum/ to existing .gitignore if not present."""
+        """Init adds all wiggum entries to existing .gitignore."""
         with runner.isolated_filesystem(temp_dir=tmp_path):
             Path("templates").mkdir()
             (Path("templates") / "LOOP-PROMPT.md").write_text(
@@ -241,6 +241,9 @@ class TestInitUpdatesGitignore:
             assert result.exit_code == 0, f"Init failed: {result.output}"
             gitignore_content = Path(".gitignore").read_text()
             assert ".wiggum/" in gitignore_content
+            assert "LOOP-PROMPT.md" in gitignore_content
+            assert "TASKS.md" in gitignore_content
+            assert ".wiggum.toml" in gitignore_content
 
     def test_init_preserves_existing_gitignore_entries(self, tmp_path: Path) -> None:
         """Init preserves existing .gitignore entries."""
@@ -271,7 +274,7 @@ class TestInitUpdatesGitignore:
             assert ".env" in gitignore_content
 
     def test_init_does_not_duplicate_wiggum_in_gitignore(self, tmp_path: Path) -> None:
-        """Init does not add .wiggum/ if already in .gitignore."""
+        """Init does not add entries already in .gitignore."""
         with runner.isolated_filesystem(temp_dir=tmp_path):
             Path("templates").mkdir()
             (Path("templates") / "LOOP-PROMPT.md").write_text(
@@ -281,8 +284,10 @@ class TestInitUpdatesGitignore:
                 "# Tasks\n\n## Todo\n\n{{tasks}}\n"
             )
             (Path("templates") / "META-PROMPT.md").write_text("Analyze {{goal}}")
-            # Create .gitignore with .wiggum/ already present
-            Path(".gitignore").write_text(".wiggum/\nnode_modules/\n")
+            # Create .gitignore with all wiggum entries already present
+            Path(".gitignore").write_text(
+                ".wiggum/\nLOOP-PROMPT.md\nTASKS.md\n.wiggum.toml\nnode_modules/\n"
+            )
 
             with patch(
                 "wiggum.runner.run_claude_for_planning", return_value=(None, None)
@@ -295,11 +300,14 @@ class TestInitUpdatesGitignore:
 
             assert result.exit_code == 0
             gitignore_content = Path(".gitignore").read_text()
-            # Should appear only once
+            # Each should appear only once
             assert gitignore_content.count(".wiggum/") == 1
+            assert gitignore_content.count("LOOP-PROMPT.md") == 1
+            assert gitignore_content.count("TASKS.md") == 1
+            assert gitignore_content.count(".wiggum.toml") == 1
 
     def test_init_creates_gitignore_if_missing(self, tmp_path: Path) -> None:
-        """Init does not create .gitignore if it doesn't exist."""
+        """Init creates .gitignore with wiggum entries if it doesn't exist."""
         with runner.isolated_filesystem(temp_dir=tmp_path):
             Path("templates").mkdir()
             (Path("templates") / "LOOP-PROMPT.md").write_text(
@@ -320,5 +328,9 @@ class TestInitUpdatesGitignore:
                 )
 
             assert result.exit_code == 0
-            # Should not create .gitignore if it didn't exist
-            assert not Path(".gitignore").exists()
+            assert Path(".gitignore").exists()
+            gitignore_content = Path(".gitignore").read_text()
+            assert ".wiggum/" in gitignore_content
+            assert "LOOP-PROMPT.md" in gitignore_content
+            assert "TASKS.md" in gitignore_content
+            assert ".wiggum.toml" in gitignore_content

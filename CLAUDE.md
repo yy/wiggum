@@ -33,6 +33,13 @@ rm -rf dist && uv build
 uv publish --token <token>
 ```
 
+## Documentation
+
+See `docs/` for deeper reference material:
+- `docs/architecture.md` — module map, data flow, key patterns
+- `docs/design-decisions.md` — settled decisions with rationale (don't re-litigate)
+- `docs/testing.md` — test organization, patterns, when to write tests
+
 ## Architecture
 
 ### CLI Commands

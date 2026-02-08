@@ -772,13 +772,15 @@ def init(
     prompt_path.write_text(prompt_content)
     typer.echo(f"Created {prompt_path} and {CONFIG_FILE}")
 
-    # Add .wiggum/ to .gitignore if exists (security: prevent diary commits)
+    # Add wiggum files to .gitignore
     gitignore_path = Path(".gitignore")
-    if gitignore_path.exists():
-        gitignore_content = gitignore_path.read_text()
-        if ".wiggum/" not in gitignore_content:
-            gitignore_path.write_text(gitignore_content.rstrip() + "\n.wiggum/\n")
-            typer.echo("Updated .gitignore with .wiggum/")
+    wiggum_entries = [".wiggum/", "LOOP-PROMPT.md", "TASKS.md", ".wiggum.toml"]
+    gitignore_content = gitignore_path.read_text() if gitignore_path.exists() else ""
+    missing = [e for e in wiggum_entries if e not in gitignore_content]
+    if missing:
+        section = "\n# wiggum\n" + "\n".join(missing) + "\n"
+        gitignore_path.write_text(gitignore_content.rstrip() + section)
+        typer.echo("Updated .gitignore with wiggum files")
 
     typer.echo("\nRun the loop with: wiggum run")
 
