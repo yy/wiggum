@@ -297,10 +297,7 @@ def resolve_run_config(
     resolved_agent = agent
     if agent is None:
         resolved_agent = loop_config.get("agent")
-    resolved_model = model
-    if model is None:
-        config_model = loop_config.get("model", "")
-        resolved_model = config_model if config_model else None
+    resolved_model = model if model is not None else (loop_config.get("model") or None)
 
     # Resolve output config
     resolved_log_file = log_file

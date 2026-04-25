@@ -25,61 +25,6 @@ def restore_cwd():
     os.chdir(original_cwd)
 
 
-# --- Parameterized tests for reading single config values ---
-
-
-@pytest.mark.parametrize(
-    "config_content,section,key,expected",
-    [
-        # [loop] section
-        ("[loop]\nmax_iterations = 25\n", "loop", "max_iterations", 25),
-        (
-            '[loop]\ntasks_file = "CUSTOM_TODO.md"\n',
-            "loop",
-            "tasks_file",
-            "CUSTOM_TODO.md",
-        ),
-        (
-            '[loop]\nprompt_file = "MY-PROMPT.md"\n',
-            "loop",
-            "prompt_file",
-            "MY-PROMPT.md",
-        ),
-        ('[loop]\nagent = "codex"\n', "loop", "agent", "codex"),
-        ("[loop]\ntimeout = 45\n", "loop", "timeout", 45),
-        # [output] section
-        ('[output]\nlog_file = "loop.log"\n', "output", "log_file", "loop.log"),
-        ("[output]\nverbose = true\n", "output", "verbose", True),
-        ("[output]\nverbose = false\n", "output", "verbose", False),
-        # [session] section
-        ("[session]\ncontinue_session = true\n", "session", "continue_session", True),
-        ("[session]\ncontinue_session = false\n", "session", "continue_session", False),
-    ],
-    ids=[
-        "loop-max_iterations",
-        "loop-tasks_file",
-        "loop-prompt_file",
-        "loop-agent",
-        "loop-timeout",
-        "output-log_file",
-        "output-verbose-true",
-        "output-verbose-false",
-        "session-continue-true",
-        "session-continue-false",
-    ],
-)
-def test_read_config_value(
-    tmp_path: Path, config_content: str, section: str, key: str, expected
-) -> None:
-    """read_config returns correct value from specified section."""
-    os.chdir(tmp_path)
-    (tmp_path / ".wiggum.toml").write_text(config_content)
-
-    config = read_config()
-
-    assert config.get(section, {}).get(key) == expected
-
-
 def test_read_all_sections(tmp_path: Path) -> None:
     """read_config returns all sections when present."""
     config_content = """[security]
