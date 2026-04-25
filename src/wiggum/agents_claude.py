@@ -24,6 +24,9 @@ class ClaudeAgent:
         """
         cmd = ["claude", "--print", "-p", config.prompt]
 
+        if config.model:
+            cmd.extend(["--model", config.model])
+
         if config.continue_session:
             cmd.append("-c")
 

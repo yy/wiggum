@@ -61,6 +61,7 @@ Settings are stored in `.wiggum.toml` and read by the `run` command:
 - `max_iterations`: Default number of loop iterations (default: 10)
 - `timeout`: Per-iteration agent timeout in seconds (default: 1800)
 - `agent`: Which agent to use (default: "claude"). Options: claude, codex, gemini
+- `model`: Model name passed through to the agent CLI (e.g., "sonnet", "opus", "claude-sonnet-4-6"). Currently honored by the claude agent.
 
 **[git] section:**
 - `enabled`: Enable git workflow (default: false)

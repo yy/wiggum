@@ -7,12 +7,6 @@ from typing import Any, Optional
 
 import typer
 
-
-def _timestamp() -> str:
-    """Return current time formatted as [HH:MM:SS]."""
-    return datetime.now().strftime("[%H:%M:%S]")
-
-
 from wiggum.agents import (
     AgentConfig,
     get_agent,
@@ -47,6 +41,11 @@ from wiggum.tasks import (
 )
 
 app = typer.Typer(help="Run iterative agent loops with task tracking")
+
+
+def _timestamp() -> str:
+    """Return current time formatted as [HH:MM:SS]."""
+    return datetime.now().strftime("[%H:%M:%S]")
 
 
 def _resolve_tasks_file(tasks_file: Path) -> Path:
@@ -131,7 +130,9 @@ def _ensure_learning_diary_dir() -> None:
     ensure_diary_dir()
 
 
-def _build_dry_run_command(agent_name: str, yolo: bool, allow_paths: Optional[str]) -> list[str]:
+def _build_dry_run_command(
+    agent_name: str, yolo: bool, allow_paths: Optional[str]
+) -> list[str]:
     """Build a representative command for dry-run output."""
     if agent_name == "codex":
         cmd = ["codex", "--json", "<prompt>"]
@@ -184,6 +185,11 @@ def run(
         None,
         "--agent",
         help="Agent to use (e.g., 'claude', 'codex', 'gemini')",
+    ),
+    model: Optional[str] = typer.Option(
+        None,
+        "--model",
+        help="Model to pass to the agent CLI (e.g., 'sonnet', 'opus', 'claude-sonnet-4-6'). Currently honored by the claude agent.",
     ),
     yolo: Optional[bool] = typer.Option(
         None,
@@ -301,6 +307,7 @@ def run(
             tasks_file=tasks_file,
             prompt_file=prompt_file,
             agent=agent,
+            model=model,
             log_file=log_file,
             show_progress=show_progress,
             continue_session=continue_session,
@@ -353,6 +360,8 @@ def run(
         cmd = _build_dry_run_command(agent_name, cfg.yolo, cfg.allow_paths)
         typer.echo(f"Would run {cfg.max_iterations} iterations")
         typer.echo(f"Agent: {agent_name}")
+        if cfg.model:
+            typer.echo(f"Model: {cfg.model}")
         typer.echo(f"Timeout: {cfg.timeout}s per iteration")
         typer.echo(f"Command: {' '.join(cmd)}")
         typer.echo(f"Stop condition: tasks (check {cfg.tasks_file})")
@@ -504,6 +513,7 @@ def run(
             # After first iteration, continue session if requested
             continue_session=cfg.continue_session and i > 1,
             timeout_seconds=cfg.timeout,
+            model=cfg.model,
         )
 
         # Debug output before agent starts

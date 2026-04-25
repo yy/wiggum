@@ -16,6 +16,7 @@ CONFIG_SCHEMA: dict[str, dict[str, tuple]] = {
     "loop": {
         "max_iterations": (10, int),
         "agent": ("claude", str),
+        "model": ("", str),
         "keep_running": (False, bool),
         "tasks_file": ("TODO.md", str),
         "prompt_file": ("LOOP-PROMPT.md", str),
@@ -155,6 +156,7 @@ class ResolvedRunConfig:
     tasks_file: Path
     prompt_file: Optional[Path]
     agent: Optional[str]
+    model: Optional[str]
     log_file: Optional[Path]
     show_progress: bool
     continue_session: bool
@@ -197,7 +199,8 @@ def resolve_run_config(
     tasks_file: Optional[Path],
     prompt_file: Optional[Path],
     agent: Optional[str],
-    log_file: Optional[Path],
+    model: Optional[str] = None,
+    log_file: Optional[Path] = None,
     show_progress: bool,
     continue_session: bool,
     reset_session: bool,
@@ -294,6 +297,10 @@ def resolve_run_config(
     resolved_agent = agent
     if agent is None:
         resolved_agent = loop_config.get("agent")
+    resolved_model = model
+    if model is None:
+        config_model = loop_config.get("model", "")
+        resolved_model = config_model if config_model else None
 
     # Resolve output config
     resolved_log_file = log_file
@@ -366,6 +373,7 @@ def resolve_run_config(
         tasks_file=resolved_tasks_file,
         prompt_file=resolved_prompt_file,
         agent=resolved_agent,
+        model=resolved_model,
         log_file=resolved_log_file,
         show_progress=resolved_show_progress,
         continue_session=resolved_continue_session,

@@ -74,6 +74,7 @@ class AgentConfig:
     allow_paths: Optional[str] = None
     continue_session: bool = False
     timeout_seconds: Optional[int] = None
+    model: Optional[str] = None
 
 
 @runtime_checkable
@@ -97,9 +98,9 @@ class Agent(Protocol):
         ...
 
 
-from wiggum.agents_claude import ClaudeAgent
-from wiggum.agents_codex import CodexAgent
-from wiggum.agents_gemini import GeminiAgent
+from wiggum.agents_claude import ClaudeAgent  # noqa: E402
+from wiggum.agents_codex import CodexAgent  # noqa: E402
+from wiggum.agents_gemini import GeminiAgent  # noqa: E402
 
 # Registry mapping agent names to their classes
 _agents: dict[str, type] = {
