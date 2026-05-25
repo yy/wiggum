@@ -7,6 +7,7 @@ These tests verify that all agents (claude, codex, gemini):
 4. Handle errors appropriately
 """
 
+import json
 import subprocess
 from unittest.mock import MagicMock, patch
 
@@ -76,10 +77,23 @@ class TestAgentResult:
             assert isinstance(result, AgentResult)
 
     def test_captures_stdout(self, name: str, agent_class: type, subprocess_path: str):
-        """Result should contain stdout from subprocess."""
+        """Result should reflect the agent message from subprocess stdout.
+
+        Codex emits JSONL events which the agent compacts into a summary, so
+        it needs valid JSONL input; other agents pass stdout through verbatim.
+        """
+        raw_stdout = {
+            "codex": json.dumps(
+                {
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": "hello world"},
+                }
+            )
+        }.get(name, "hello world")
+
         with patch(subprocess_path) as mock_run:
             mock_run.return_value = MagicMock(
-                stdout="hello world", stderr="", returncode=0
+                stdout=raw_stdout, stderr="", returncode=0
             )
             agent = agent_class()
             result = agent.run(AgentConfig(prompt="test"))
@@ -158,9 +172,7 @@ class TestAgentErrorHandling:
             assert "not found" in result.stderr.lower()
             assert result.stdout == ""
 
-    def test_handles_timeout(
-        self, name: str, agent_class: type, subprocess_path: str
-    ):
+    def test_handles_timeout(self, name: str, agent_class: type, subprocess_path: str):
         """Should return timeout error result when subprocess exceeds timeout."""
         with patch(subprocess_path) as mock_run:
             mock_run.side_effect = subprocess.TimeoutExpired(cmd=name, timeout=5)

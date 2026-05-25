@@ -16,7 +16,7 @@ class TestCodexAgentCommandBuilding:
 
     @patch("wiggum.agents_codex.subprocess.run")
     def test_basic_command(self, mock_run: MagicMock):
-        """Basic config should build 'codex --json <prompt>'."""
+        """Basic config should build 'codex exec --json <prompt>'."""
         mock_run.return_value = MagicMock(stdout="output", stderr="", returncode=0)
 
         agent = CodexAgent()
@@ -25,11 +25,11 @@ class TestCodexAgentCommandBuilding:
 
         mock_run.assert_called_once()
         cmd = mock_run.call_args[0][0]
-        assert cmd == ["codex", "--json", "test prompt"]
+        assert cmd == ["codex", "exec", "--json", "test prompt"]
 
     @patch("wiggum.agents_codex.subprocess.run")
     def test_yolo_mode_adds_flag(self, mock_run: MagicMock):
-        """yolo=True should add --yolo flag."""
+        """yolo=True should add the bypass-approvals flag."""
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
 
         agent = CodexAgent()
@@ -37,11 +37,11 @@ class TestCodexAgentCommandBuilding:
         agent.run(config)
 
         cmd = mock_run.call_args[0][0]
-        assert "--yolo" in cmd
+        assert "--dangerously-bypass-approvals-and-sandbox" in cmd
 
     @patch("wiggum.agents_codex.subprocess.run")
     def test_yolo_false_no_flag(self, mock_run: MagicMock):
-        """yolo=False should not add --yolo flag."""
+        """yolo=False should not add the bypass-approvals flag."""
         mock_run.return_value = MagicMock(stdout="", stderr="", returncode=0)
 
         agent = CodexAgent()
@@ -49,7 +49,7 @@ class TestCodexAgentCommandBuilding:
         agent.run(config)
 
         cmd = mock_run.call_args[0][0]
-        assert "--yolo" not in cmd
+        assert "--dangerously-bypass-approvals-and-sandbox" not in cmd
 
     @patch("wiggum.agents_codex.subprocess.run")
     def test_allow_paths_adds_add_dir_flags(self, mock_run: MagicMock):
